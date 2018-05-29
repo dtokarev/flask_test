@@ -1,4 +1,4 @@
-from src import app
+from app import app
 
 
 @app.route("/add", methods=["POST", "GET"])

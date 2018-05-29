@@ -1,4 +1,4 @@
-from src import db
+from app import db
 
 
 class DownloadQueue(db.Model):
