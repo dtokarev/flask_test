@@ -61,7 +61,6 @@ class Rutracker:
         """
         link = Rutracker.URL_PAGE + self.get_page_link(key)
         parsed_data = self.parse_page_data(link)
-        # print(json.dumps(parsed_data, indent=2, ensure_ascii=False))
 
         return parsed_data
 
@@ -70,21 +69,27 @@ class Rutracker:
         :param link: page link
         :return: parsed data from the page with magnet-link
         """
-        data = {}
+        result = {}
         response = self.session.get(link)
-        bs = BeautifulSoup(response.content, "html.parser")
-        data['magnet-link'] = bs.find('a', {'class': 'magnet-link'})['href']
-        data['title'] = bs.find('span', {'class': 'post-u'}).get_text()
+        html = response.text
+        html = re.sub(r'<hr[^>]+>', '\n', html)
+
+        with open('tmp/html.txt', 'w') as file:
+            file.write(html)
+
+        bs = BeautifulSoup(html, "html.parser")
 
         body = bs.find('div', {'class': 'post_body'})
 
-        for e in re.findall(r'(.+?) *: *(.+)', body.get_text()):
-            k, v = e
-            k = k.replace('\xa0', '').replace('\xa0', '').strip(' :')
+        for k, v in re.findall(r'(.+?) *: *(.+)', body.get_text()):
+            k = k.replace('\xa0', '').strip(' :')
             v = v.strip(' :|')
-            data[k] = v
+            result[k] = v
 
-        return data
+        result['magnet-link'] = bs.find('a', {'class': 'magnet-link'})['href']
+        result['title'] = bs.find('span', {'class': 'post-u'}).get_text()
+
+        return result
 
     def get_page_link(self, key) -> str:
         """
