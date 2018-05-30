@@ -23,7 +23,7 @@ class Search(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     types = ['movie', 'series']
-    statuses = ['new', 'completed', 'error']
+    statuses = ['new', 'processing', 'completed', 'error']
 
 # class Download(db.Model):
 #     id = db.Column(db.Integer, primary_key=True)

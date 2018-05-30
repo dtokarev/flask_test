@@ -59,8 +59,12 @@ class Rutracker:
         :param key: search key
         :return: parsed data
         """
+        print('searching for {}'.format(key))
         link = Rutracker.URL_PAGE + self.get_page_link(key)
+        print('link {}'.format(link))
+
         parsed_data = self.parse_page_data(link)
+        print('data {}'.format(str(parsed_data)))
 
         return parsed_data
 
@@ -87,7 +91,7 @@ class Rutracker:
             result[k] = v
 
         result['magnet-link'] = bs.find('a', {'class': 'magnet-link'})['href']
-        result['title'] = bs.find('span', {'class': 'post-u'}).get_text()
+        result['title'] = bs.find('title').get_text()
 
         return result
 
