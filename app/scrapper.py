@@ -1,10 +1,13 @@
-import json
 import os
 import pickle
 import re
+from typing import Union
 
 import requests
 from bs4 import BeautifulSoup
+
+from app.domain.model import ParsedData
+from app.domain.search_preferences import *
 
 
 class Rutracker:
@@ -31,9 +34,6 @@ class Rutracker:
         self.session.headers = self.base_headers
 
     def login(self) -> None:
-        """
-        logs current session
-        """
         if self.load_session():
             return
 
@@ -54,25 +54,26 @@ class Rutracker:
     # def solve_captcha(self):
     #     pass
 
-    def search(self, key: str) -> dict:
+    def search(self, key: str, preferences: Preferences) -> dict:
         """
+        searches for given key and preferences and returns parsed page data
+        :param preferences: additional parameters for filtering search result set
         :param key: search key
         :return: parsed data
         """
-        print('searching for {}'.format(key))
-        link = Rutracker.URL_PAGE + self.get_page_link(key)
-        print('link {}'.format(link))
+        link = self.get_page_link(key, preferences)
+        print('parsing link {} for search query {} '.format(link, key))
 
-        parsed_data = self.parse_page_data(link)
-        print('data {}'.format(str(parsed_data)))
+        return self.parse_page_data(link)
 
-        return parsed_data
-
-    def parse_page_data(self, link: str) -> dict:
+    def parse_page_data(self, link: str) -> Union[dict, None]:
         """
         :param link: page link
         :return: parsed data from the page with magnet-link
         """
+        if not link:
+            return None
+
         result = {}
         response = self.session.get(link)
         html = response.text
@@ -95,8 +96,9 @@ class Rutracker:
 
         return result
 
-    def get_page_link(self, key) -> str:
+    def get_page_link(self, key, preferences: Preferences) -> Union[str, None]:
         """
+        :param preferences:
         :param key: search key
         :return: link to page
         """
@@ -115,12 +117,21 @@ class Rutracker:
         bs = BeautifulSoup(response.content, "html.parser")
         result = bs.find('table', {'id': 'tor-tbl'})
 
+        matchers = []
         for row in result.select('tbody > tr'):
-            link_element = row.find('div', {'class': 't-title'}).find('a')
-            title = link_element.get_text()
-            link = link_element['href']
-            # TODO: доп логика фильтрации
-            return link
+            if not row.find('td', {'class': 'tor-size'}):
+                return None
+
+            result_data = {
+                KEY_SIZE: row.find('td', {'class': 'tor-size'}).get_text()
+            }
+
+            # check size, format etc
+            matcher = preferences.get_matcher(result_data)
+            matcher.bind_link(row.find('div', {'class': 't-title'}).find('a')['href'])
+            matchers.append(matcher)
+
+        return Rutracker.URL_PAGE + Matcher.get_best(matchers).link
 
     def save_session(self):
         """

@@ -1,10 +1,4 @@
-import json
-
-import requests
-
-import config
-from app import app, db
-from app.model import Search
+from app import app
 
 
 @app.route("/import/mw-report", methods=["POST"])

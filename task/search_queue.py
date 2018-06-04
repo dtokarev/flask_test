@@ -4,15 +4,13 @@ import traceback
 
 from sqlalchemy import func
 
-import config
 from app import db
-from app.model import Search
+from app.domain.model import Search, Config
+from app.domain.search_preferences import Preferences
 from app.scrapper import Rutracker
+from app.utils.search import generate_keyword_set
 
-USER = config.get_secret("RUTR_USER")
-PASS = config.get_secret("RUTR_PASS")
-
-tracker = Rutracker(USER, PASS)
+tracker = Rutracker(Config.get("RUTR_USER"), Config.get("RUTR_PASS"))
 
 
 def search():
@@ -22,28 +20,51 @@ def search():
             break
 
     if not s:
+        print('no item to search')
+        time.sleep(60)
         return
 
     s_id = s.id
     try:
         s.status = Search.statuses.index('processing')
         db.session.commit()
+
         tracker.login()
         time.sleep(3)
-        data = tracker.search('{} {}'.format(s.title_ru, s.year))
 
+        # generating keywords
+        search_keys = generate_keyword_set(s.title_ru, s.year)
+        search_preferences = Preferences()
+
+        # searching the link
+        best_link = None
+        for search_key in search_keys:
+            best_link = tracker.get_page_link(search_key, search_preferences)
+
+        # parsing data
+        data = tracker.parse_page_data(best_link)
+
+        if not best_link or not data:
+            s.status = Search.statuses.index('not found')
+            return
+
+        s.parsed_page = best_link
+        s.status = Search.statuses.index('completed')
         add_download(data)
+
     except Exception as e:
         db.session.rollback()
         s = Search.query.get(s_id)
         s.error = traceback.format_exc()
         s.status = Search.statuses.index('error')
+        raise e
+
     finally:
         db.session.commit()
 
 
 def add_download(parsed_data: dict) -> None:
-    print(parsed_data)
+    print(json.dumps(parsed_data, indent=2))
 
 
 search()
