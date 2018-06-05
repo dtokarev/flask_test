@@ -1,7 +1,7 @@
 import os
 import pickle
 import re
-from typing import Union
+from typing import Union, Tuple
 
 import requests
 from bs4 import BeautifulSoup
@@ -87,7 +87,7 @@ class Rutracker:
 
         return response.content
 
-    def parse_page(self, link: str) -> Union[dict, None]:
+    def parse_page(self, link: str) -> Union[Tuple[dict, str], Tuple[None, None]]:
         """
         :param link: page link
         :return: parsed data from the page with magnet-link
@@ -106,9 +106,9 @@ class Rutracker:
 
         bs = BeautifulSoup(html, "html.parser")
 
-        body = bs.find('div', {'class': 'post_body'})
+        body = bs.find('div', {'class': 'post_body'}).get_text()
 
-        for k, v in re.findall(r'(.+?) *: *(.+)', body.get_text()):
+        for k, v in re.findall(r'(.+?) *: *(.+)', body):
             k = k.replace('\xa0', '').strip(' :')
             v = v.strip(' :|')
             result[k] = v
@@ -118,10 +118,10 @@ class Rutracker:
         result[ParserTokens.KEY_SIZE] = bs.find('span', {'id': 'tor-size-humn'}).get_text()
         result[ParserTokens.KEY_PAGE_LINK] = link
 
+        return result, body
 
-        return result
-
-    def _get_page_link_from_search_result(self, html: str, preferences: Preferences) -> Union[str, None]:
+    @staticmethod
+    def _get_page_link_from_search_result(html: str, preferences: Preferences) -> Union[str, None]:
         bs = BeautifulSoup(html, "html.parser")
         result = bs.find('table', {'id': 'tor-tbl'})
 

@@ -2,7 +2,7 @@ import re
 from collections import OrderedDict
 
 
-def generate_keyword_set(keyword: str, year=''):
+def generate_keywords(keyword: str, year=''):
     # result needs to be ordered set
     result = list()
     clean_keyword = re.sub(r"\([^)]*\)", '', keyword).strip()

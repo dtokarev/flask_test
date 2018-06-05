@@ -5,7 +5,7 @@ from nose.tools import *
 
 from app.domain.model import Config
 from app.scrapper import *
-from app.utils.search import generate_keyword_set
+from app.utils.search import generate_keywords
 from app.utils.unit_converter import size_human_to_float
 
 tracker = Rutracker(Config.get("RUTR_USER"), Config.get("RUTR_PASS"))
@@ -28,12 +28,12 @@ def test_rutr_parsers():
     link = tracker.get_page_link(['movie lorem ipsum dolor 2000'], preferences)
     assert_is_none(link)
 
-    search_keys = generate_keyword_set('The Shawshank Redemption', '1994')
+    search_keys = generate_keywords('The Shawshank Redemption', '1994')
     link = tracker.get_page_link(search_keys, preferences)
     assert_is_not_none(link)
 
     # size
-    page_data = tracker.parse_page(link)
+    page_data, _ = tracker.parse_page(link)
     size_current = size_human_to_float(page_data.get(ParserTokens.KEY_SIZE, '0 KB'), 'KB')
     size_lo = size_human_to_float(preferences.acceptable_size_range[0], 'KB')
     size_hi = size_human_to_float(preferences.acceptable_size_range[1], 'KB')

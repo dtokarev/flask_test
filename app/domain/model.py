@@ -43,6 +43,7 @@ class ParsedData(db.Model):
     mw_id = db.Column(db.String(250))
 
     raw_page_data = db.Column(db.Text())
+    raw_page_html = db.Column(db.Text())
     quality = db.Column(db.String(250))
     format = db.Column(db.String(250))
     size = db.Column(db.String(250))
@@ -75,7 +76,7 @@ class Download(db.Model):
     save_path = db.Column(db.String(250))
     status = db.Column(db.Integer, nullable=False)
 
-    statuses = ["in_queue", "downloading", "finished", "updated", "error"]
+    statuses = ["new", "downloading", "finished", "updated", "error"]
     states = ['queued', 'checking', 'downloading metadata', 'downloading', 'finished', 'seeding', 'allocating']
 
 

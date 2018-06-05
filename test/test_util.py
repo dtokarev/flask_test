@@ -2,15 +2,15 @@ from nose.tools import *
 
 
 def test_search_generate_keyword_set():
-    from app.utils.search import generate_keyword_set
+    from app.utils.search import generate_keywords
 
-    keys = generate_keyword_set('some movie name')
+    keys = generate_keywords('some movie name')
     assert_list_equal(['some movie name'], keys)
 
-    keys = generate_keyword_set('some movie name (TV)')
+    keys = generate_keywords('some movie name (TV)')
     assert_list_equal(['some movie name (TV)', 'some movie name'], keys)
 
-    keys = generate_keyword_set('some movie name (TV)', '2010')
+    keys = generate_keywords('some movie name (TV)', '2010')
     assert_list_equal(['some movie name (TV) 2010', 'some movie name (TV)', 'some movie name'], keys)
 
 
