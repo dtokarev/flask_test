@@ -1,12 +1,14 @@
 import re
+from collections import OrderedDict
 
 
 def generate_keyword_set(keyword: str, year=''):
-    result = set()
-    result.add('{} {}'.format(keyword, year))
+    # result needs to be ordered set
+    result = list()
+    clean_keyword = re.sub(r"\([^)]*\)", '', keyword).strip()
 
-    # removing all parentheses
-    result.add( re.sub(r"\([^)]*\)", '', '{} {}'.format(keyword, year)) )
-    result.add(keyword)
+    result.append('{} {}'.format(keyword, year).strip())
+    result.append(keyword)
+    result.append(clean_keyword)
 
-    return result
+    return list(OrderedDict.fromkeys(result))

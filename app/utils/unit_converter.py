@@ -11,7 +11,7 @@ units_in_bytes = {
 }
 
 
-def parse_size(size_str: str, out_unit: str='KB') -> float:
+def size_human_to_float(size_str: str, out_unit: str= 'KB') -> float:
     """
     parses string '10 GB' to number in specified units
     :param size_str:
@@ -21,11 +21,14 @@ def parse_size(size_str: str, out_unit: str='KB') -> float:
     size_str = size_str.replace('\n', ' ')
     data = re.search("([0-9.]+)\s*(KB|MB|GB)", size_str, re.IGNORECASE)
 
-    if len(data.groups()) != 3 and data.group(1).upper() not in units_in_bytes:
+    if not data \
+            or len(data.groups()) != 2 \
+            or data.group(2).upper() not in units_in_bytes \
+            or out_unit.upper() not in units_in_bytes:
         raise ValueError("could not parse size {}".format(size_str))
 
-    size = float(data.group(0))
-    unit = data.group(1).upper()
+    size = float(data.group(1))
+    unit = data.group(2).upper()
 
     in_bytes = int(size * units_in_bytes[unit])
 

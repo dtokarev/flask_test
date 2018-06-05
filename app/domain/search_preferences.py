@@ -1,8 +1,7 @@
 from typing import List
 
-from app.utils.unit_converter import parse_size, GB
-
-KEY_SIZE = 'size'
+from app.utils.unit_converter import size_human_to_float, GB
+from app.domain.const import ParserTokens
 
 
 class Matcher:
@@ -25,6 +24,11 @@ class Matcher:
 
     @staticmethod
     def get_best(matchers: List['Matcher']):
+        """
+        get first best matcher from list based on matcher's quality
+        :param matchers:
+        :return:
+        """
         best = matchers[0]
         for matcher in matchers:
             if matcher.get_quality() > best.get_quality():
@@ -34,22 +38,22 @@ class Matcher:
 
 
 class Preferences:
-    source_type_list = 'BDRip', 'HDTVRip'
-    genres_list = 'боевик', 'триллер', 'приключения', 'триллер', 'фантастика', 'мелодрама'
+    # source_type_list = 'BDRip', 'HDTVRip'
+    # genres_list = 'боевик', 'триллер', 'приключения', 'триллер', 'фантастика', 'мелодрама'
 
-    def __init__(self):
+    def __init__(self, acceptable_size_range=('1.3 GB', '1.6 GB')):
+        self.acceptable_size_range = acceptable_size_range
         # self.best_size_range = '700 MB', '800 MB'
-        self.acceptable_size_range = '1.4 GB', '1.5 GB'
         # self.source_type = None
         # self.genre = None
 
-    def get_matcher(self, result_data: dict) -> Matcher:
+    def get_matcher(self, actual_data: dict) -> Matcher:
         matcher = Matcher()
 
-        current_size = parse_size(result_data[KEY_SIZE], GB)
-        best_size_lo = parse_size(self.acceptable_size_range[0], GB)
-        best_size_hi = parse_size(self.acceptable_size_range[1], GB)
-        matcher.best_size_matched = best_size_lo < current_size < best_size_hi
+        current_size = size_human_to_float(actual_data[ParserTokens.KEY_SIZE], GB)
+        acceptable_size_lo = size_human_to_float(self.acceptable_size_range[0], GB)
+        acceptable_size_hi = size_human_to_float(self.acceptable_size_range[1], GB)
+        matcher.acceptable_size_matched = acceptable_size_lo < current_size < acceptable_size_hi
 
         return matcher
 

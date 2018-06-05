@@ -42,7 +42,7 @@ def search():
             best_link = tracker.get_page_link(search_key, search_preferences)
 
         # parsing data
-        data = tracker.parse_page_data(best_link)
+        data = tracker.parse_page(best_link)
 
         if not best_link or not data:
             s.status = Search.statuses.index('not found')

@@ -2,7 +2,6 @@ import json
 
 import requests
 
-import config
 from app import db
 from app.domain.model import Search, Config
 
