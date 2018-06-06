@@ -2,7 +2,6 @@ import os
 import random
 from time import sleep
 
-from app import app
 from nose.tools import *
 
 from app.domain.dto import ParsedData
@@ -58,4 +57,3 @@ def test_rutr_parsed_data():
     assert_is_not(parsed_data.size, empty_data.size)
     assert_is_not(parsed_data.raw_data, empty_data.raw_data)
     assert_is_not(parsed_data.raw_html, empty_data.raw_html)
-

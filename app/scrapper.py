@@ -9,7 +9,6 @@ from bs4 import BeautifulSoup
 from app.domain.dto import ParsedData
 from app.domain.search import *
 from app.services.search import get_matcher
-from app.utils.search import html_to_text
 from app.utils.unit_converter import duration_human_to_sec
 
 
@@ -110,13 +109,17 @@ class Rutracker:
         bs = BeautifulSoup(html, "html.parser")
 
         raw_data = {}
-        body_text = html_to_text( bs.find('div', {'class': 'post_body'}).prettify() )
+        body_text = str(bs.find('div', {'class': 'post_body'}))
+        body_text = body_text\
+            .replace('<br>', '\n')\
+            .replace('<br/>', '\n')\
+            .replace('\n\n', '\n')\
+            .replace('<span class="post-br">\n</span>', '\n')
 
-        for k, v in re.findall(r'(.+?) *: *(.+)', body_text):
-            k = k.strip(' :')
-            v = v.strip(' :|')
+        for k, v in re.findall(r'<span class="post-b">(.*)</span>[ :]+(.+)', body_text):
+            k = k.strip(' :|')
+            v = re.sub(r'<[^>]+>', '', v.strip(' :|'))
             raw_data[k] = v
-        print(raw_data)
 
         data = ParsedData()
         data.raw_data = raw_data
@@ -124,6 +127,7 @@ class Rutracker:
         data.magnet_link = bs.find('a', {'class': 'magnet-link'})['href']
         data.title = bs.find('title')
         data.size = bs.find('span', {'id': 'tor-size-humn'}).get_text()
+
         data.country = raw_data.get('Страна')
         data.format = raw_data.get('Формат видео')
         data.duration = duration_human_to_sec(raw_data.get('Продолжительность'))
@@ -131,12 +135,11 @@ class Rutracker:
         data.subtitle = raw_data.get('Субтитры')
         data.subtitle_format = raw_data.get('Формат субтитров')
         data.gender = raw_data.get('Жанр')
-
-        data.description = ''
-        data.quality = ''
-        data.casting = ''
-        data.video_info = ''
-        data.audio_info = ''
+        data.description = raw_data.get('Описание')
+        data.quality = raw_data.get('Качество видео')
+        data.casting = raw_data.get('В ролях')
+        data.video_info = raw_data.get('Видео')
+        data.audio_info = raw_data.get('Аудио')
 
         return data
 

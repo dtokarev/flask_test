@@ -38,7 +38,6 @@ def size_human_to_float(human_str: str, out_unit: str= 'KB') -> float:
 def duration_human_to_sec(human_str: str):
     try:
         h, m, s = tuple(int(v.strip()) for v in human_str.split(':'))
-        print(h, m, s)
         return h*3600 + m*60 + s
     except:
         return None
