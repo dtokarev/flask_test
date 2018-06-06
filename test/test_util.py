@@ -34,19 +34,3 @@ def test_unit_converter_duration_human_to_sec():
     assert_equal(60, duration_human_to_sec('00:01:00'))
     assert_equal(60, duration_human_to_sec('0:01:00'))
     assert_equal(3700, duration_human_to_sec('01:01:40'))
-
-
-# def test_search_html_to_text():
-#     from app.utils.search import html_to_text
-#
-#     assert_equal('hello', html_to_text('<div>hello</div>'))
-#     assert_equal('hel\nlo', html_to_text('<div>hel<br id="test"/>lo</div>'))
-#
-#     # real page
-#     folder = os.path.abspath(os.path.dirname(__file__))
-#     with open(os.path.join(folder, 'data', 'rutr_page_html.html')) as file:
-#         html = file.read()
-#     with open(os.path.join(folder, 'data', 'rutr_page_full_text.txt')) as file:
-#         text = file.read()
-#
-#     assert_equal(text, html_to_text(html))

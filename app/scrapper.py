@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from app.domain.dto import ParsedData
 from app.domain.search import *
 from app.services.search import get_matcher
-from app.utils.unit_converter import duration_human_to_sec
+from app.utils.unit_converter import duration_human_to_sec, size_human_to_float
 
 
 class Rutracker:
@@ -108,14 +108,13 @@ class Rutracker:
         """
         bs = BeautifulSoup(html, "html.parser")
 
-        raw_data = {}
         body_text = str(bs.find('div', {'class': 'post_body'}))
         body_text = body_text\
             .replace('<br>', '\n')\
             .replace('<br/>', '\n')\
-            .replace('\n\n', '\n')\
             .replace('<span class="post-br">\n</span>', '\n')
 
+        raw_data = {}
         for k, v in re.findall(r'<span class="post-b">(.*)</span>[ :]+(.+)', body_text):
             k = k.strip(' :|')
             v = re.sub(r'<[^>]+>', '', v.strip(' :|'))
@@ -125,8 +124,8 @@ class Rutracker:
         data.raw_data = raw_data
         data.raw_html = html
         data.magnet_link = bs.find('a', {'class': 'magnet-link'})['href']
-        data.title = bs.find('title')
-        data.size = bs.find('span', {'id': 'tor-size-humn'}).get_text()
+        data.title = bs.find('title').get_text()
+        data.size = int( size_human_to_float(bs.find('span', {'id': 'tor-size-humn'}).get_text(), 'KB') )
 
         data.country = raw_data.get('Страна')
         data.format = raw_data.get('Формат видео')

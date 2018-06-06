@@ -11,9 +11,10 @@ units_in_bytes = {
 }
 
 
-def size_human_to_float(human_str: str, out_unit: str= 'KB') -> float:
+def size_human_to_float(human_str: str, out_unit: str='KB', precision: int=2) -> float:
     """
     parses string '10 GB' to number in specified units
+    :param precision:
     :param human_str:
     :param out_unit:
     :return:
@@ -32,7 +33,7 @@ def size_human_to_float(human_str: str, out_unit: str= 'KB') -> float:
 
     in_bytes = int(size * units_in_bytes[unit])
 
-    return round(in_bytes / units_in_bytes[out_unit.upper()], 2)
+    return round(in_bytes / units_in_bytes[out_unit.upper()], precision)
 
 
 def duration_human_to_sec(human_str: str):
