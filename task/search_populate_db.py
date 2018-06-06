@@ -28,16 +28,17 @@ def run():
                 continue
 
             existing_ids.add(kinopoisk_id)
-            model_attributes = {
-                'title_ru': movie.get('title_ru', ''),
-                'title_en': movie.get('title_en', ''),
-                'kinopoisk_id': kinopoisk_id,
-                'year': movie.get('year', None),
-                'type': Search.types.index('movie'),
-                'import_source': 'all_en',
-                'extra_json': movie,
-            }
-            db.session.add(Search(**model_attributes))
+
+            s = Search()
+            s.title_ru = movie.get('title_ru', None)
+            s.title_en = movie.get('title_en', None)
+            s.kinopoisk_id = kinopoisk_id
+            s.year = movie.get('year', None)
+            s.type = Search.types.index('movie')
+            s.import_source = 'all_en'
+            s.extra_json = json.dumps(movie)
+
+            db.session.add(s)
 
         print('adding new {}'.format(len(db.session.new)))
         db.session.commit()

@@ -1,4 +1,6 @@
+import json
 from datetime import datetime
+from typing import Union
 
 from app import db
 
@@ -25,27 +27,35 @@ class Search(db.Model):
     type = db.Column(db.SmallInteger, index=True, nullable=False, default=0)
     status = db.Column(db.SmallInteger, index=True, nullable=False, default=0)
     import_source = db.Column(db.String(250))
-    extra_json = db.Column(db.Text())
+    raw = db.Column(db.Text())
     created_at = db.Column(db.DateTime(), default=datetime.utcnow, nullable=False)
 
-    parsed_data = db.relationship("ParsedData", uselist=False, backref="search")
+    parsed_data = db.relationship("ResourceMeta", uselist=False, backref="search")
     download = db.relationship("Download", uselist=False, backref="search")
 
     types = ['movie', 'series']
     statuses = ['new', 'processing', 'completed', 'error', 'not found']
 
+    def get_from_raw(self, key: str) -> Union[str, None]:
+        try:
+            d = json.loads(self.raw)
+            return d.get(key, None)
+        except ValueError:
+            return None
 
-class ParsedData(db.Model):
+
+class ResourceMeta(db.Model):
     id = db.Column(db.BigInteger(), primary_key=True)
     search_id = db.Column(db.Integer(), db.ForeignKey('search.id'), nullable=False)
 
     kinopoisk_id = db.Column(db.String(250))
-    mw_id = db.Column(db.String(250))
+    import_source_id = db.Column(db.String(250))
 
     raw_page_data = db.Column(db.Text())
     raw_page_html = db.Column(db.Text())
     quality = db.Column(db.String(250))
     format = db.Column(db.String(250))
+    country = db.Column(db.String(250))
     size = db.Column(db.String(250))
     title_en = db.Column(db.String(250))
     title_ru = db.Column(db.String(250))

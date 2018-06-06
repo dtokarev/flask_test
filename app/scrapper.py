@@ -6,9 +6,11 @@ from typing import Union
 import requests
 from bs4 import BeautifulSoup
 
-from app.domain.dto import DecoupledParsedData
+from app.domain.dto import ParsedData
 from app.domain.search import *
 from app.services.search import get_matcher
+from app.utils.search import html_to_text
+from app.utils.unit_converter import duration_human_to_sec
 
 
 class Rutracker:
@@ -100,28 +102,43 @@ class Rutracker:
         return html
 
     @staticmethod
-    def parse_html(html: str) -> DecoupledParsedData:
+    def parse_html(html: str) -> ParsedData:
         """
         :param html:
         :return: parsed data from the page with magnet-link
         """
         bs = BeautifulSoup(html, "html.parser")
-        body = bs.find('div', {'class': 'post_body'}).get_text()
 
         raw_data = {}
-        for k, v in re.findall(r'(.+?) *: *(.+)', body):
-            k = k.replace('\xa0', '').strip(' :')
+        body_text = html_to_text( bs.find('div', {'class': 'post_body'}).prettify() )
+
+        for k, v in re.findall(r'(.+?) *: *(.+)', body_text):
+            k = k.strip(' :')
             v = v.strip(' :|')
             raw_data[k] = v
+        print(raw_data)
 
-        result = DecoupledParsedData()
-        result.raw_data = raw_data
-        result.raw_html = html
-        result.magnet_link = bs.find('a', {'class': 'magnet-link'})['href']
-        result.title = bs.find('a', {'class': 'magnet-link'})['href']
-        result.size = bs.find('span', {'id': 'tor-size-humn'}).get_text()
+        data = ParsedData()
+        data.raw_data = raw_data
+        data.raw_html = html
+        data.magnet_link = bs.find('a', {'class': 'magnet-link'})['href']
+        data.title = bs.find('title')
+        data.size = bs.find('span', {'id': 'tor-size-humn'}).get_text()
+        data.country = raw_data.get('Страна')
+        data.format = raw_data.get('Формат видео')
+        data.duration = duration_human_to_sec(raw_data.get('Продолжительность'))
+        data.translation = raw_data.get('Перевод')
+        data.subtitle = raw_data.get('Субтитры')
+        data.subtitle_format = raw_data.get('Формат субтитров')
+        data.gender = raw_data.get('Жанр')
 
-        return result
+        data.description = ''
+        data.quality = ''
+        data.casting = ''
+        data.video_info = ''
+        data.audio_info = ''
+
+        return data
 
     @staticmethod
     def _get_page_link_from_search_result(html: str, preferences: Preferences) -> Union[str, None]:

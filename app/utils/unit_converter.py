@@ -11,21 +11,21 @@ units_in_bytes = {
 }
 
 
-def size_human_to_float(size_str: str, out_unit: str= 'KB') -> float:
+def size_human_to_float(human_str: str, out_unit: str= 'KB') -> float:
     """
     parses string '10 GB' to number in specified units
-    :param size_str:
+    :param human_str:
     :param out_unit:
     :return:
     """
-    size_str = size_str.replace('\n', ' ')
-    data = re.search("([0-9.]+)\s*(KB|MB|GB)", size_str, re.IGNORECASE)
+    human_str = human_str.replace('\n', ' ')
+    data = re.search(r"([0-9.]+)\s*(KB|MB|GB)", human_str, re.IGNORECASE)
 
     if not data \
             or len(data.groups()) != 2 \
             or data.group(2).upper() not in units_in_bytes \
             or out_unit.upper() not in units_in_bytes:
-        raise ValueError("could not parse size {}".format(size_str))
+        raise ValueError("could not parse size {}".format(human_str))
 
     size = float(data.group(1))
     unit = data.group(2).upper()
@@ -33,3 +33,12 @@ def size_human_to_float(size_str: str, out_unit: str= 'KB') -> float:
     in_bytes = int(size * units_in_bytes[unit])
 
     return round(in_bytes / units_in_bytes[out_unit.upper()], 2)
+
+
+def duration_human_to_sec(human_str: str):
+    try:
+        h, m, s = tuple(int(v.strip()) for v in human_str.split(':'))
+        print(h, m, s)
+        return h*3600 + m*60 + s
+    except:
+        return None

@@ -36,6 +36,7 @@ class Matcher:
 
 class Preferences:
     KEY_SIZE = 'parsed_size'
+    DEFAULT_UNIT = 'GB'
 
     # source_type_list = 'BDRip', 'HDTVRip'
     # genres_list = 'боевик', 'триллер', 'приключения', 'триллер', 'фантастика', 'мелодрама'
