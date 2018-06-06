@@ -1,8 +1,5 @@
 from typing import List
 
-from app.utils.unit_converter import size_human_to_float, GB
-from app.domain.const import ParserTokens
-
 
 class Matcher:
     def __init__(self):
@@ -38,6 +35,8 @@ class Matcher:
 
 
 class Preferences:
+    KEY_SIZE = 'parsed_size'
+
     # source_type_list = 'BDRip', 'HDTVRip'
     # genres_list = 'боевик', 'триллер', 'приключения', 'триллер', 'фантастика', 'мелодрама'
 
@@ -46,15 +45,3 @@ class Preferences:
         # self.best_size_range = '700 MB', '800 MB'
         # self.source_type = None
         # self.genre = None
-
-    def get_matcher(self, actual_data: dict) -> Matcher:
-        matcher = Matcher()
-
-        current_size = size_human_to_float(actual_data[ParserTokens.KEY_SIZE], GB)
-        acceptable_size_lo = size_human_to_float(self.acceptable_size_range[0], GB)
-        acceptable_size_hi = size_human_to_float(self.acceptable_size_range[1], GB)
-        matcher.acceptable_size_matched = acceptable_size_lo < current_size < acceptable_size_hi
-
-        return matcher
-
-

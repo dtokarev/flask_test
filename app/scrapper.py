@@ -1,13 +1,14 @@
 import os
 import pickle
 import re
-from typing import Union, Tuple
+from typing import Union
 
 import requests
 from bs4 import BeautifulSoup
 
-from app.domain.search_preferences import *
-from app.domain.const import ParserTokens
+from app.domain.dto import DecoupledParsedData
+from app.domain.search import *
+from app.services.search import get_matcher
 
 
 class Rutracker:
@@ -64,7 +65,7 @@ class Rutracker:
         :return: link to page
         """
         for key in keys:
-            content = self._get_search_result_content(key)
+            content = self.get_search_result_content(key)
             link = self._get_page_link_from_search_result(content, preferences)
 
             if link:
@@ -72,7 +73,7 @@ class Rutracker:
 
         return None
 
-    def _get_search_result_content(self, key: str):
+    def get_search_result_content(self, key: str):
         post_data = {
             'nm': key,
             'prev_new': 0,
@@ -87,38 +88,40 @@ class Rutracker:
 
         return response.content
 
-    def parse_page(self, link: str) -> Union[Tuple[dict, str], Tuple[None, None]]:
-        """
-        :param link: page link
-        :return: parsed data from the page with magnet-link
-        """
+    def get_page_content(self, link: str):
         if not link:
             return None
 
         print('parsing link {}'.format(link))
-        result = {}
         response = self.session.get(link)
         html = response.text
         html = re.sub(r'<hr[^>]+>', '\n', html)
 
-        with open('tmp/html.txt', 'w') as file:
-            file.write(html)
+        return html
 
+    @staticmethod
+    def parse_html(html: str) -> DecoupledParsedData:
+        """
+        :param html:
+        :return: parsed data from the page with magnet-link
+        """
         bs = BeautifulSoup(html, "html.parser")
-
         body = bs.find('div', {'class': 'post_body'}).get_text()
 
+        raw_data = {}
         for k, v in re.findall(r'(.+?) *: *(.+)', body):
             k = k.replace('\xa0', '').strip(' :')
             v = v.strip(' :|')
-            result[k] = v
+            raw_data[k] = v
 
-        result[ParserTokens.KEY_MAGNET_LINK] = bs.find('a', {'class': 'magnet-link'})['href']
-        result[ParserTokens.KEY_TITLE] = bs.find('title').get_text()
-        result[ParserTokens.KEY_SIZE] = bs.find('span', {'id': 'tor-size-humn'}).get_text()
-        result[ParserTokens.KEY_PAGE_LINK] = link
+        result = DecoupledParsedData()
+        result.raw_data = raw_data
+        result.raw_html = html
+        result.magnet_link = bs.find('a', {'class': 'magnet-link'})['href']
+        result.title = bs.find('a', {'class': 'magnet-link'})['href']
+        result.size = bs.find('span', {'id': 'tor-size-humn'}).get_text()
 
-        return result, body
+        return result
 
     @staticmethod
     def _get_page_link_from_search_result(html: str, preferences: Preferences) -> Union[str, None]:
@@ -132,11 +135,11 @@ class Rutracker:
                 return None
 
             actual_data = {
-                ParserTokens.KEY_SIZE: size_tag.get_text()
+                Preferences.KEY_SIZE: size_tag.get_text()
             }
 
             # check size, format etc
-            matcher = preferences.get_matcher(actual_data)
+            matcher = get_matcher(preferences, actual_data)
             matcher.bind_link(row.find('div', {'class': 't-title'}).find('a')['href'])
             matchers.append(matcher)
 

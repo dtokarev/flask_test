@@ -19,7 +19,7 @@ class Search(db.Model):
     title_ru = db.Column(db.String(250))
     title_en = db.Column(db.String(250))
     kinopoisk_id = db.Column(db.String(250), unique=True, nullable=True)
-    parsed_page = db.Column(db.String(250))
+    page_link = db.Column(db.String(250))
     error = db.Column(db.Text())
     year = db.Column(db.SmallInteger, nullable=True)
     type = db.Column(db.SmallInteger, index=True, nullable=False, default=0)
