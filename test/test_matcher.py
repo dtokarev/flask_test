@@ -1,4 +1,4 @@
-from nose.tools import *
+from nose.tools import assert_true, assert_false, assert_is
 
 from app.domain.search import Preferences, Matcher
 from app.services.search import get_matcher

@@ -33,7 +33,8 @@ class Matcher:
 
         if best.get_quality() == 0 \
                 or not best.acceptable_size_matched:
-            raise Exception('best matcher did not meet any prerequisites (quality is 0)')
+            raise Exception('best matcher did not meet any prerequisites (quality is 0) link {}'
+                            .format(best.link))
 
         return best
 

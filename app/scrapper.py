@@ -1,13 +1,13 @@
 import os
 import pickle
 import re
-from typing import Union
+from typing import Union, List
 
 import requests
 from bs4 import BeautifulSoup
 
 from app.domain.dto import ParsedData
-from app.domain.search import *
+from app.domain.search import Preferences, Matcher
 from app.services.search import get_matcher
 from app.utils.unit_converter import duration_human_to_sec, size_human_to_float
 
@@ -89,7 +89,7 @@ class Rutracker:
 
         return response.content
 
-    def get_page_content(self, link: str):
+    def get_page_content(self, link: str) -> str:
         if not link:
             return None
 
@@ -191,4 +191,3 @@ class Rutracker:
 
     def _is_session_present(self):
         return os.path.isfile(self.SESSION_FILE)
-

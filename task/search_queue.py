@@ -89,4 +89,5 @@ def _get_from_queue():
 def _thread_sleep(lo: int =1, hi: int = 3):
     time.sleep(random.randint(lo, hi))
 
+
 run()
