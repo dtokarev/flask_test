@@ -62,3 +62,22 @@ def test_rutr_parsed_data():
     assert_equal(parsed_data.subtitle, 'русские (softsub, ASS), иврит (hardsub)')
     assert_equal(parsed_data.subtitle_format, 'softsub (ASS)')
     assert_equal(parsed_data.gender, 'драма')
+
+
+def test_get_page_link_from_search_result():
+    folder = os.path.abspath(os.path.dirname(__file__))
+    with open(os.path.join(folder, 'data', 'rutr_search_page_test_1.html')) as file:
+        html = file.read()
+
+    preferences = SearchPreferences(
+        generate_keywords('Одержимая', '2013')
+    )
+    link = Rutracker.get_page_link_from_search_result(html, preferences)
+    assert_true(link.endswith('4734868'))
+
+    preferences = SearchPreferences(
+        generate_keywords('Одержимая', '2013'),
+        acceptable_size_range=('3 GB', '4 GB')
+    )
+    link = Rutracker.get_page_link_from_search_result(html, preferences)
+    assert_true(link.endswith('5473278'))

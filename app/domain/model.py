@@ -31,7 +31,7 @@ class Search(db.Model):
     raw = db.Column(db.Text())
     created_at = db.Column(db.DateTime(), default=datetime.utcnow, nullable=False)
 
-    parsed_data = db.relationship("ResourceMeta", uselist=False, backref="search")
+    parsed_data = db.relationship("DownloadMeta", uselist=False, backref="search")
     download = db.relationship("Download", uselist=False, backref="search")
 
     types = ['movie', 'series']
@@ -45,31 +45,31 @@ class Search(db.Model):
             return None
 
 
-class ResourceMeta(db.Model):
+class DownloadMeta(db.Model):
     id = db.Column(db.BigInteger(), primary_key=True)
     search_id = db.Column(db.Integer(), db.ForeignKey('search.id'), nullable=False)
 
     kinopoisk_id = db.Column(db.String(250))
     import_source_id = db.Column(db.String(250))
 
-    raw_page_data = db.Column(db.Text())
-    raw_page_html = db.Column(db.Text())
+    raw_page_data = db.Column(db.UnicodeText(4294000000))
+    raw_page_html = db.Column(db.UnicodeText(4294000000))
     quality = db.Column(db.String(250))
     format = db.Column(db.String(250))
     country = db.Column(db.String(250))
     size = db.Column(db.String(250))
-    title_en = db.Column(db.String(250))
-    title_ru = db.Column(db.String(250))
+    title_en = db.Column(db.Text())
+    title_ru = db.Column(db.Text())
     duration = db.Column(db.Integer)
     translation = db.Column(db.String(250))
     subtitle = db.Column(db.String(250))
     subtitle_format = db.Column(db.String(250))
-    gender = db.Column(db.String(250))
+    gender = db.Column(db.Text())
     description = db.Column(db.Text())
     year = db.Column(db.Integer())
-    casting = db.Column(db.String(250))
-    video_info = db.Column(db.String(250))
-    audio_info = db.Column(db.String(250))
+    casting = db.Column(db.Text())
+    video_info = db.Column(db.Text())
+    audio_info = db.Column(db.Text())
 
 
 class Download(db.Model):
@@ -82,10 +82,33 @@ class Download(db.Model):
     num_peers = db.Column(db.Integer())
     magnet_link = db.Column(db.Text())
     torrent_state = db.Column(db.String(250))
-    created_at = db.Column(db.Date(), default=datetime.utcnow())
-    downloaded_at = db.Column(db.Date())
+    created_at = db.Column(db.DateTime(), default=datetime.utcnow)
+    downloaded_at = db.Column(db.DateTime())
     save_path = db.Column(db.String(250))
     status = db.Column(db.Integer, nullable=False)
 
     statuses = ["new", "downloading", "finished", "updated", "error"]
     states = ['queued', 'checking', 'downloading metadata', 'downloading', 'finished', 'seeding', 'allocating']
+
+
+class Resource(db.Model):
+    id = db.Column(db.BigInteger, primary_key=True)
+    type = db.Column(db.SmallInteger, index=True, nullable=False)
+    domain = db.Column(db.String(250), nullable=False)
+    system_path = db.Column(db.String(250), nullable=False)
+    relative_path = db.Column(db.String(250), nullable=False)
+    episode_no = db.Column(db.Integer())
+    episode_title = db.Column(db.UnicodeText(), nullable=False)
+    season_no = db.Column(db.Integer())
+    season_title = db.Column(db.UnicodeText())
+    resource_media = db.relationship("ResourceMedia", uselist=False, backref="resource")
+
+
+class ResourceMedia(db.Model):
+    id = db.Column(db.BigInteger, primary_key=True)
+    resource_id = db.Column(db.BigInteger, db.ForeignKey('resource.id'), nullable=False)
+    type = db.Column(db.SmallInteger, index=True, nullable=False)
+    mime = db.Column(db.String(250), nullable=False)
+    domain = db.Column(db.String(250))
+    system_path = db.Column(db.String(250))
+    relative_path = db.Column(db.String(250))

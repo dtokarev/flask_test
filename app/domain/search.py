@@ -12,6 +12,9 @@ class Matcher:
         # self.source_type_matched = False
         # self.genre_matched = False
 
+    def __repr__(self):
+        return str(self.__dict__)
+
     def get_quality(self):
         quality = 0
 
@@ -41,6 +44,7 @@ class Matcher:
                 best = matcher
 
         if best.get_quality() == 0:
+            print(matchers)
             raise Exception('best matcher quality is 0 link {}'.format(best.link))
 
         return best

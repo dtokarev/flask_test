@@ -11,7 +11,10 @@ def test_search_generate_keyword_set():
     assert_list_equal(['some movie name (TV)', 'some movie name'], keys)
 
     keys = generate_keywords('some movie name (TV)', '2010')
-    assert_list_equal(['some movie name (TV) 2010', 'some movie name 2010', 'some movie name (TV)'], keys)
+    assert_list_equal(['some movie name (TV) 2010', 'some movie name 2010', 'some movie name (TV)', 'some movie name'], keys)
+
+    keys = generate_keywords('some movie name (TV)', 'OR THIS MOVIE NAME (TELEVISION)', '2010')
+    assert_list_equal(['some movie name (TV) OR THIS MOVIE NAME (TELEVISION) 2010', 'some movie name OR THIS MOVIE NAME 2010', 'some movie name (TV)', 'some movie name'], keys)
 
 
 def test_unit_converter_size_human_to_float():

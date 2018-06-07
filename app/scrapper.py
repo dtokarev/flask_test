@@ -67,15 +67,15 @@ class Rutracker:
         :return: link to page
         """
         for key in preferences.keywords:
-            content = self.get_search_result_content(key)
-            link = self._get_page_link_from_search_result(content, preferences)
+            content = self.get_search_result_page(key)
+            link = self.get_page_link_from_search_result(content, preferences)
 
             if link:
                 return link
 
-        return None
+        raise Exception('no link found for {}'.format(preferences))
 
-    def get_search_result_content(self, key: str):
+    def get_search_result_page(self, key: str):
         post_data = {
             'nm': key,
             'prev_new': 0,
@@ -91,9 +91,6 @@ class Rutracker:
         return response.content
 
     def get_page_content(self, link: str) -> str:
-        if not link:
-            return None
-
         print('parsing link {}'.format(link))
         response = self.session.get(link)
         html = response.text
@@ -144,21 +141,23 @@ class Rutracker:
         return data
 
     @staticmethod
-    def _get_page_link_from_search_result(html: str, preferences: SearchPreferences) -> Union[str, None]:
+    def get_page_link_from_search_result(html: str, preferences: SearchPreferences) -> Union[str, None]:
         bs = BeautifulSoup(html, "html.parser")
         result = bs.find('table', {'id': 'tor-tbl'})
 
         matchers = []
         for row in result.select('tbody > tr'):
             size_tag = row.find('td', {'class': 'tor-size'})
-            seeders_tag = row.find('b', {'class': 'seedmed'})
             link_tag = row.find('a', {'class': 'tLink'})
-            if not size_tag or not seeders_tag:
-                return None
+            seeders_tag = row.find('b', {'class': 'seedmed'})
+            # different UI message if no seeders
+            seeders = int(seeders_tag.get_text()) if seeders_tag else 0
+            if not size_tag:
+                raise Exception('could not find size_tag in result page')
 
             actual_data = {
                 SearchPreferences.KEY_SIZE: size_tag.get_text(),
-                SearchPreferences.KEY_SEEDERS: int(seeders_tag.get_text()),
+                SearchPreferences.KEY_SEEDERS: seeders,
                 SearchPreferences.KEY_KEYWORD: link_tag.get_text()
             }
 
@@ -167,7 +166,12 @@ class Rutracker:
             matcher.bind_link(row.find('div', {'class': 't-title'}).find('a')['href'])
             matchers.append(matcher)
 
-        return Rutracker.URL_PAGE + Matcher.get_best(matchers).link
+        best_matcher = Matcher.get_best(matchers)
+
+        if not best_matcher:
+            return None
+
+        return Rutracker.URL_PAGE + best_matcher.link
 
     def _save_session(self):
         """

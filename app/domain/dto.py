@@ -1,4 +1,4 @@
-from app.domain.model import ResourceMeta, Download
+from app.domain.model import DownloadMeta, Download
 
 
 class ParsedData:
@@ -26,9 +26,9 @@ class ParsedData:
     def __repr__(self):
         return str(self.__dict__)
 
-    def to_meta_model(self, model: ResourceMeta=None):
+    def to_meta_model(self, model: DownloadMeta=None):
         if not model:
-            model = ResourceMeta()
+            model = DownloadMeta()
 
         model.raw_page_data = self.raw_data
         model.raw_page_html = self.raw_html

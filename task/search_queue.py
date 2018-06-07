@@ -1,6 +1,5 @@
 import random
 import time
-import traceback
 
 from sqlalchemy import func
 
@@ -15,22 +14,31 @@ tracker = Rutracker(Config.get("RUTR_USER"), Config.get("RUTR_PASS"))
 
 
 def run():
-    s = _get_from_queue()
+    tracker.login()
+    _thread_sleep()
 
-    if not s:
-        print('no item to search')
-        time.sleep(60)
-        return
+    while True:
+        s = _get_from_queue()
 
+        if not s:
+            print('no item to search')
+            time.sleep(60)
+            return
+
+        try:
+            _thread_sleep()
+            search_and_parse(s)
+        except Exception as e:
+            print(e)
+
+
+def search_and_parse(s):
     s_id = s.id
     try:
         s.status = Search.statuses.index('processing')
         db.session.commit()
 
-        tracker.login()
-        _thread_sleep()
-
-        preferences = SearchPreferences(generate_keywords(s.title_ru, s.year))
+        preferences = SearchPreferences(generate_keywords(s.title_ru, s.title_en, s.year))
         link = tracker.get_page_link(preferences)
         _thread_sleep()
 
@@ -49,28 +57,28 @@ def run():
     except Exception as e:
         db.session.rollback()
         s = Search.query.get(s_id)
-        s.error = traceback.format_exc()
+        s.error = e
         s.status = Search.statuses.index('error')
-        raise e
+        print(e)
     finally:
         db.session.commit()
 
 
-def add_resource_meta(search: Search, data: ParsedData) -> None:
+def add_resource_meta(s: Search, data: ParsedData) -> None:
     model = data.to_meta_model()
-    model.search_id = search.id
-    model.kinopoisk_id = search.kinopoisk_id
-    model.title_en = search.title_en
-    model.title_ru = search.title_ru
-    model.import_source_id = search.get_from_raw('token')
-    model.year = search.year
+    model.search_id = s.id
+    model.kinopoisk_id = s.kinopoisk_id
+    model.title_en = s.title_en
+    model.title_ru = s.title_ru
+    model.import_source_id = s.import_source_id
+    model.year = s.year
 
     db.session.add(model)
 
 
-def add_download(search: Search, data: ParsedData) -> None:
+def add_download(s: Search, data: ParsedData) -> None:
     model = data.to_download_model()
-    model.search_id = search.id
+    model.search_id = s.id
     model.progress = 0
     model.save_path = '/tmp/movies'
     model.status = Download.statuses.index('new')
