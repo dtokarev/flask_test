@@ -7,6 +7,7 @@ class Matcher:
         # self.best_size_matched = False
         self.acceptable_size_matched = False
         self.min_seeders_matched = False
+        self.keyword_matched = False
         self.seeders_num = 0
         # self.source_type_matched = False
         # self.genre_matched = False
@@ -14,7 +15,9 @@ class Matcher:
     def get_quality(self):
         quality = 0
 
-        if not self.acceptable_size_matched or not self.min_seeders_matched:
+        if not self.acceptable_size_matched \
+                or not self.min_seeders_matched\
+                or not self.keyword_matched:
             return quality
 
         quality += 10                   # at least must prerequisites matched
@@ -43,17 +46,22 @@ class Matcher:
         return best
 
 
-class Preferences:
+class SearchPreferences:
     KEY_SIZE = 'parsed_size'
     KEY_SEEDERS = 'parsed_seeders'
+    KEY_KEYWORD = 'parsed_keyword'
     DEFAULT_UNIT = 'GB'
 
     # source_type_list = 'BDRip', 'HDTVRip'
     # genres_list = 'боевик', 'триллер', 'приключения', 'триллер', 'фантастика', 'мелодрама'
 
-    def __init__(self, acceptable_size_range=('1.3 GB', '1.6 GB')):
+    def __init__(self, keywords, acceptable_size_range=('1.3 GB', '1.6 GB')):
         self.acceptable_size_range = acceptable_size_range
         self.min_seeders = 3
+        self.keywords = keywords
         # self.best_size_range = '700 MB', '800 MB'
         # self.source_type = None
         # self.genre = None
+
+    def __repr__(self, *args, **kwargs):
+        return str(self.__dict__)

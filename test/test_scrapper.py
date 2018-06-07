@@ -4,16 +4,13 @@ from time import sleep
 
 from nose.tools import *
 
-from app.domain.dto import ParsedData
 from app.domain.model import Config
-from app.domain.search import Preferences
+from app.domain.search import SearchPreferences
 from app.scrapper import Rutracker
 from app.utils.search import generate_keywords
 from app.utils.unit_converter import size_human_to_float
 
 tracker = Rutracker(Config.get("RUTR_USER"), Config.get("RUTR_PASS"))
-preferences = Preferences()
-
 
 def setup_func():
     sleep(random.randint(2, 4))
@@ -29,11 +26,10 @@ def test_rutr_login():
 @nottest
 @with_setup(setup_func)
 def test_rutr_search_link():
-    link = tracker.get_page_link(['movie lorem ipsum dolor 2000'], preferences)
+    link = tracker.get_page_link(SearchPreferences(['movie lorem ipsum dolor 2000']))
     assert_is_none(link)
 
-    search_keys = generate_keywords('The Shawshank Redemption', '1994')
-    link = tracker.get_page_link(search_keys, preferences)
+    link = tracker.get_page_link(SearchPreferences(generate_keywords('The Shawshank Redemption', '1994')))
     assert_is_not_none(link)
 
     assert_true(link.endswith('5460105'))
@@ -45,6 +41,7 @@ def test_rutr_parsed_data():
         html = file.read()
 
     parsed_data = Rutracker.parse_html(html)
+    preferences = SearchPreferences(generate_keywords('Захват: Маршрут 300', '2018'))
 
     size_lo = size_human_to_float(preferences.acceptable_size_range[0], 'KB')
     size_hi = size_human_to_float(preferences.acceptable_size_range[1], 'KB')

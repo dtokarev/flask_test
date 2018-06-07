@@ -7,7 +7,7 @@ from sqlalchemy import func
 from app import db
 from app.domain.dto import ParsedData
 from app.domain.model import Search, Config, Download
-from app.domain.search import Preferences
+from app.domain.search import SearchPreferences
 from app.scrapper import Rutracker
 from app.utils.search import generate_keywords
 
@@ -30,7 +30,8 @@ def run():
         tracker.login()
         _thread_sleep()
 
-        link = tracker.get_page_link(generate_keywords(s.title_ru, s.year), Preferences())
+        preferences = SearchPreferences(generate_keywords(s.title_ru, s.year))
+        link = tracker.get_page_link(preferences)
         _thread_sleep()
 
         raw_html = tracker.get_page_content(link)

@@ -8,8 +8,8 @@ from bs4 import BeautifulSoup
 
 from app.domain.dto import ParsedData
 from app.domain.model import Config
-from app.domain.search import Preferences, Matcher
-from app.services.search import get_matcher
+from app.domain.search import SearchPreferences, Matcher
+from app.service.search_service import get_matcher
 from app.utils.unit_converter import duration_human_to_sec, size_human_to_float
 
 
@@ -57,7 +57,7 @@ class Rutracker:
     # def solve_captcha(self):
     #     pass
 
-    def get_page_link(self, keys: List[str], preferences: Preferences) -> Union[str, None]:
+    def get_page_link(self, preferences: SearchPreferences) -> Union[str, None]:
         """
         Accepts list of keys. If result page has any entry with currently iterated key returns best link,
         else picks up next key in list. So, order of the list is important, first item must be most specific,
@@ -66,7 +66,7 @@ class Rutracker:
         :param keys: search key list
         :return: link to page
         """
-        for key in keys:
+        for key in preferences.keywords:
             content = self.get_search_result_content(key)
             link = self._get_page_link_from_search_result(content, preferences)
 
@@ -144,7 +144,7 @@ class Rutracker:
         return data
 
     @staticmethod
-    def _get_page_link_from_search_result(html: str, preferences: Preferences) -> Union[str, None]:
+    def _get_page_link_from_search_result(html: str, preferences: SearchPreferences) -> Union[str, None]:
         bs = BeautifulSoup(html, "html.parser")
         result = bs.find('table', {'id': 'tor-tbl'})
 
@@ -152,12 +152,14 @@ class Rutracker:
         for row in result.select('tbody > tr'):
             size_tag = row.find('td', {'class': 'tor-size'})
             seeders_tag = row.find('b', {'class': 'seedmed'})
+            link_tag = row.find('a', {'class': 'tLink'})
             if not size_tag or not seeders_tag:
                 return None
 
             actual_data = {
-                Preferences.KEY_SIZE: size_tag.get_text(),
-                Preferences.KEY_SEEDERS: int(seeders_tag.get_text())
+                SearchPreferences.KEY_SIZE: size_tag.get_text(),
+                SearchPreferences.KEY_SEEDERS: int(seeders_tag.get_text()),
+                SearchPreferences.KEY_KEYWORD: link_tag.get_text()
             }
 
             # check size, format etc
