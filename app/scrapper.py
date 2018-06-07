@@ -7,13 +7,14 @@ import requests
 from bs4 import BeautifulSoup
 
 from app.domain.dto import ParsedData
+from app.domain.model import Config
 from app.domain.search import Preferences, Matcher
 from app.services.search import get_matcher
 from app.utils.unit_converter import duration_human_to_sec, size_human_to_float
 
 
 class Rutracker:
-    URL_BASE = "https://rutracker.net/"
+    URL_BASE = Config.get('RUTR_URL_BASE')
     URL_LOGIN_POST = URL_BASE + "forum/login.php"
     URL_SEARCH = URL_BASE + "forum/tracker.php?nm={key}"
     URL_PAGE = URL_BASE + "forum/"
@@ -150,11 +151,13 @@ class Rutracker:
         matchers = []
         for row in result.select('tbody > tr'):
             size_tag = row.find('td', {'class': 'tor-size'})
-            if not size_tag:
+            seeders_tag = row.find('b', {'class': 'seedmed'})
+            if not size_tag or not seeders_tag:
                 return None
 
             actual_data = {
-                Preferences.KEY_SIZE: size_tag.get_text()
+                Preferences.KEY_SIZE: size_tag.get_text(),
+                Preferences.KEY_SEEDERS: int(seeders_tag.get_text())
             }
 
             # check size, format etc

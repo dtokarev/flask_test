@@ -6,13 +6,19 @@ class Matcher:
         self.link = ''
         # self.best_size_matched = False
         self.acceptable_size_matched = False
+        self.min_seeders_matched = False
+        self.seeders_num = 0
         # self.source_type_matched = False
         # self.genre_matched = False
 
     def get_quality(self):
         quality = 0
-        if self.acceptable_size_matched:
-            quality += 10
+
+        if not self.acceptable_size_matched or not self.min_seeders_matched:
+            return quality
+
+        quality += 10                   # at least must prerequisites matched
+        quality += self.seeders_num
 
         return quality
 
@@ -31,16 +37,15 @@ class Matcher:
             if matcher.get_quality() > best.get_quality():
                 best = matcher
 
-        if best.get_quality() == 0 \
-                or not best.acceptable_size_matched:
-            raise Exception('best matcher did not meet any prerequisites (quality is 0) link {}'
-                            .format(best.link))
+        if best.get_quality() == 0:
+            raise Exception('best matcher quality is 0 link {}'.format(best.link))
 
         return best
 
 
 class Preferences:
     KEY_SIZE = 'parsed_size'
+    KEY_SEEDERS = 'parsed_seeders'
     DEFAULT_UNIT = 'GB'
 
     # source_type_list = 'BDRip', 'HDTVRip'
@@ -48,6 +53,7 @@ class Preferences:
 
     def __init__(self, acceptable_size_range=('1.3 GB', '1.6 GB')):
         self.acceptable_size_range = acceptable_size_range
+        self.min_seeders = 3
         # self.best_size_range = '700 MB', '800 MB'
         # self.source_type = None
         # self.genre = None
