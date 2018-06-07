@@ -27,6 +27,7 @@ class Search(db.Model):
     type = db.Column(db.SmallInteger, index=True, nullable=False, default=0)
     status = db.Column(db.SmallInteger, index=True, nullable=False, default=0)
     import_source = db.Column(db.String(250))
+    import_source_id = db.Column(db.String(250))
     raw = db.Column(db.Text())
     created_at = db.Column(db.DateTime(), default=datetime.utcnow, nullable=False)
 
@@ -88,6 +89,3 @@ class Download(db.Model):
 
     statuses = ["new", "downloading", "finished", "updated", "error"]
     states = ['queued', 'checking', 'downloading metadata', 'downloading', 'finished', 'seeding', 'allocating']
-
-
-

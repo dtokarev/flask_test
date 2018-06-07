@@ -31,7 +31,8 @@ class Matcher:
             if matcher.get_quality() > best.get_quality():
                 best = matcher
 
-        if best.get_quality() == 0:
+        if best.get_quality() == 0 \
+                or not best.acceptable_size_matched:
             raise Exception('best matcher did not meet any prerequisites (quality is 0)')
 
         return best

@@ -33,4 +33,5 @@ venv/
 
 #IDE
 .idea
+.vscode
 
