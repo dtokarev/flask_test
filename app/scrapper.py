@@ -66,7 +66,7 @@ class Rutracker:
         :param keys: search key list
         :return: link to page
         """
-        for key in preferences.keywords:
+        for key in preferences.generated_keywords:
             content = self.get_search_result_page(key)
             link = self.get_page_link_from_search_result(content, preferences)
 
@@ -153,7 +153,7 @@ class Rutracker:
             # different UI message if no seeders
             seeders = int(seeders_tag.get_text()) if seeders_tag else 0
             if not size_tag:
-                raise Exception('could not find size_tag in result page')
+                continue
 
             actual_data = {
                 SearchPreferences.KEY_SIZE: size_tag.get_text(),

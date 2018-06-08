@@ -8,14 +8,12 @@ from app.domain.dto import ParsedData
 from app.domain.model import Search, Config, Download
 from app.domain.search import SearchPreferences
 from app.scrapper import Rutracker
-from app.utils.search import generate_keywords
 
 tracker = Rutracker(Config.get("RUTR_USER"), Config.get("RUTR_PASS"))
 
 
 def run():
     tracker.login()
-    _thread_sleep()
 
     while True:
         s = _get_from_queue()
@@ -25,11 +23,8 @@ def run():
             time.sleep(60)
             return
 
-        try:
-            _thread_sleep()
-            search_and_parse(s)
-        except Exception as e:
-            print(e)
+        _thread_sleep()
+        search_and_parse(s)
 
 
 def search_and_parse(s):
@@ -38,7 +33,7 @@ def search_and_parse(s):
         s.status = Search.statuses.index('processing')
         db.session.commit()
 
-        preferences = SearchPreferences(generate_keywords(s.title_ru, s.title_en, s.year))
+        preferences = SearchPreferences(keywords=[s.title_ru, s.title_en], year=s.year)
         link = tracker.get_page_link(preferences)
         _thread_sleep()
 
@@ -59,7 +54,6 @@ def search_and_parse(s):
         s = Search.query.get(s_id)
         s.error = e
         s.status = Search.statuses.index('error')
-        print(e)
     finally:
         db.session.commit()
 

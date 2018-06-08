@@ -3,13 +3,10 @@ from collections import OrderedDict
 
 
 def generate_keywords(*keys: str, year=''):
-    # result needs to be ordered set
     result = list()
+    keys = [k.strip() for k in keys if k.strip()]
 
     clean_keys = [re.sub(r"\([^)]*\)", '', key).strip() for key in keys]
-
-    keys = [k.strip() for k in keys if k]
-    year = int(year.strip()) if year else ''
 
     result.append(' '.join(keys) + ' {}'.format(year))
     result.append(' '.join(clean_keys) + ' {}'.format(year))

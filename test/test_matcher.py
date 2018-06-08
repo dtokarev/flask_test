@@ -4,7 +4,7 @@ from app.domain.search import SearchPreferences, Matcher
 from app.service.search_service import get_matcher
 from app.utils.search import generate_keywords
 
-preferences = SearchPreferences(generate_keywords('The Shawshank Redemption', '1994'))
+preferences = SearchPreferences(keywords=['The Shawshank Redemption'], year='1994')
 preferences.acceptable_size_range = '1.3 GB', '1.6 GB'
 
 

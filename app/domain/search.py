@@ -1,5 +1,8 @@
 from typing import List
 
+from app.exception import ResultNotFoundException
+from app.utils.search import generate_keywords
+
 
 class Matcher:
     def __init__(self):
@@ -45,7 +48,7 @@ class Matcher:
 
         if best.get_quality() == 0:
             print(matchers)
-            raise Exception('best matcher quality is 0 link {}'.format(best.link))
+            raise ResultNotFoundException('best matcher quality is 0 link {}'.format(best.link))
 
         return best
 
@@ -59,10 +62,11 @@ class SearchPreferences:
     # source_type_list = 'BDRip', 'HDTVRip'
     # genres_list = 'боевик', 'триллер', 'приключения', 'триллер', 'фантастика', 'мелодрама'
 
-    def __init__(self, keywords, acceptable_size_range=('1.3 GB', '1.6 GB')):
+    def __init__(self, keywords: List, year: int = None, acceptable_size_range=('1.3 GB', '1.6 GB')):
         self.acceptable_size_range = acceptable_size_range
         self.min_seeders = 3
         self.keywords = keywords
+        self.generated_keywords = generate_keywords(*keywords, year=year)
         # self.best_size_range = '700 MB', '800 MB'
         # self.source_type = None
         # self.genre = None

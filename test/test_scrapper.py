@@ -7,10 +7,10 @@ from nose.tools import *
 from app.domain.model import Config
 from app.domain.search import SearchPreferences
 from app.scrapper import Rutracker
-from app.utils.search import generate_keywords
 from app.utils.unit_converter import size_human_to_float
 
 tracker = Rutracker(Config.get("RUTR_USER"), Config.get("RUTR_PASS"))
+
 
 def setup_func():
     sleep(random.randint(2, 4))
@@ -29,19 +29,25 @@ def test_rutr_search_link():
     link = tracker.get_page_link(SearchPreferences(['movie lorem ipsum dolor 2000']))
     assert_is_none(link)
 
-    link = tracker.get_page_link(SearchPreferences(generate_keywords('The Shawshank Redemption', '1994')))
+    link = tracker.get_page_link(SearchPreferences(['The Shawshank Redemption'], year=1994))
     assert_is_not_none(link)
 
     assert_true(link.endswith('5460105'))
 
 
-def test_rutr_parsed_data():
+def read_from_file(rel_path:str) -> str:
     folder = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(folder, 'data', 'rutr_page_html.html')) as file:
+    with open(os.path.join(folder, rel_path)) as file:
         html = file.read()
 
+    return html
+
+
+def test_rutr_parsed_data():
+    html = read_from_file(os.path.join('data', 'rutr_page_html.html'))
+
     parsed_data = Rutracker.parse_html(html)
-    preferences = SearchPreferences(generate_keywords('Захват: Маршрут 300', '2018'))
+    preferences = SearchPreferences(['Захват: Маршрут 300'], 2018)
 
     size_lo = size_human_to_float(preferences.acceptable_size_range[0], 'KB')
     size_hi = size_human_to_float(preferences.acceptable_size_range[1], 'KB')
@@ -65,19 +71,17 @@ def test_rutr_parsed_data():
 
 
 def test_get_page_link_from_search_result():
-    folder = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(folder, 'data', 'rutr_search_page_test_1.html')) as file:
-        html = file.read()
+    html = read_from_file(os.path.join('data', 'rutr_search_page_test_1.html'))
 
-    preferences = SearchPreferences(
-        generate_keywords('Одержимая', '2013')
-    )
+    preferences = SearchPreferences(['Одержимая'], 2013)
     link = Rutracker.get_page_link_from_search_result(html, preferences)
     assert_true(link.endswith('4734868'))
 
-    preferences = SearchPreferences(
-        generate_keywords('Одержимая', '2013'),
-        acceptable_size_range=('3 GB', '4 GB')
-    )
+    preferences = SearchPreferences(['Одержимая'], 2013, acceptable_size_range=('3 GB', '4 GB'))
     link = Rutracker.get_page_link_from_search_result(html, preferences)
     assert_true(link.endswith('5473278'))
+
+    html = read_from_file(os.path.join('data', 'rutr_search_page_test_2.html'))
+    preferences = SearchPreferences(['Квартира', 'The Apartment'], 1960)
+    link = Rutracker.get_page_link_from_search_result(html, preferences)
+    assert_true(link.endswith('2243255'))
