@@ -1,5 +1,6 @@
 import random
 import time
+import traceback
 
 from sqlalchemy import func
 
@@ -7,6 +8,7 @@ from app import db
 from app.domain.dto import ParsedData
 from app.domain.model import Search, Config, Download
 from app.domain.search import SearchPreferences
+from app.exception import NonCriticalException
 from app.scrapper import Rutracker
 
 tracker = Rutracker(Config.get("RUTR_USER"), Config.get("RUTR_PASS"))
@@ -52,8 +54,13 @@ def search_and_parse(s):
     except Exception as e:
         db.session.rollback()
         s = Search.query.get(s_id)
-        s.error = e
-        s.status = Search.statuses.index('error')
+        if isinstance(e, NonCriticalException):
+            s.error = e
+            s.status = Search.statuses.index('not found')
+        else:
+            s.status = Search.statuses.index('error')
+            s.error = traceback.print_exc()
+        print(e)
     finally:
         db.session.commit()
 
@@ -74,7 +81,6 @@ def add_download(s: Search, data: ParsedData) -> None:
     model = data.to_download_model()
     model.search_id = s.id
     model.progress = 0
-    model.save_path = '/tmp/movies'
     model.status = Download.statuses.index('new')
 
     db.session.add(model)

@@ -22,7 +22,7 @@ class Search(db.Model):
     title_en = db.Column(db.String(250))
     kinopoisk_id = db.Column(db.String(250), unique=True, nullable=True)
     page_link = db.Column(db.String(250))
-    error = db.Column(db.Text())
+    error = db.Column(db.UnicodeText(4294000000))
     year = db.Column(db.SmallInteger, nullable=True)
     type = db.Column(db.SmallInteger, index=True, nullable=False, default=0)
     status = db.Column(db.SmallInteger, index=True, nullable=False, default=0)

@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from app.domain.dto import ParsedData
 from app.domain.model import Config
 from app.domain.search import SearchPreferences, Matcher
+from app.exception import ResultNotFoundException
 from app.service.search_service import get_matcher
 from app.utils.unit_converter import duration_human_to_sec, size_human_to_float
 
@@ -58,14 +59,6 @@ class Rutracker:
     #     pass
 
     def get_page_link(self, preferences: SearchPreferences) -> Union[str, None]:
-        """
-        Accepts list of keys. If result page has any entry with currently iterated key returns best link,
-        else picks up next key in list. So, order of the list is important, first item must be most specific,
-        last most generic
-        :param preferences:
-        :param keys: search key list
-        :return: link to page
-        """
         for key in preferences.generated_keywords:
             content = self.get_search_result_page(key)
             link = self.get_page_link_from_search_result(content, preferences)
@@ -73,7 +66,7 @@ class Rutracker:
             if link:
                 return link
 
-        raise Exception('no link found for {}'.format(preferences))
+        raise ResultNotFoundException('no link found for {}'.format(preferences))
 
     def get_search_result_page(self, key: str):
         post_data = {
@@ -114,8 +107,11 @@ class Rutracker:
 
         raw_data = {}
         for k, v in re.findall(r'<span class="post-b">(.*)</span>[ :]+(.+)', body_text):
-            k = k.strip(' :|')
-            v = re.sub(r'<[^>]+>', '', v.strip(' :|'))
+            k = re.sub(r'<[^>]+>', ' ', k).strip(' :|')     # any tag to space
+            k = re.sub(r'\s+', ' ', k)                       # multiple spaces to one
+
+            v = re.sub(r'<[^>]+>', ' ', v).strip(' :|')
+            v = re.sub(r'\s+', ' ', v).strip(' :|')
             raw_data[k] = v
 
         data = ParsedData()
@@ -166,12 +162,11 @@ class Rutracker:
             matcher.bind_link(row.find('div', {'class': 't-title'}).find('a')['href'])
             matchers.append(matcher)
 
-        best_matcher = Matcher.get_best(matchers)
-
-        if not best_matcher:
+        try:
+            best_matcher = Matcher.get_best(matchers)
+            return Rutracker.URL_PAGE + best_matcher.link
+        except (ResultNotFoundException, AttributeError):
             return None
-
-        return Rutracker.URL_PAGE + best_matcher.link
 
     def _save_session(self):
         """

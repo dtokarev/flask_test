@@ -41,6 +41,9 @@ class Matcher:
         :param matchers:
         :return:
         """
+        if not matchers:
+            raise ResultNotFoundException('matcher - no result')
+
         best = matchers[0]
         for matcher in matchers:
             if matcher.get_quality() > best.get_quality():
@@ -48,7 +51,7 @@ class Matcher:
 
         if best.get_quality() == 0:
             print(matchers)
-            raise ResultNotFoundException('best matcher quality is 0 link {}'.format(best.link))
+            raise ResultNotFoundException('matcher - best quality is 0 link {}'.format(best.link))
 
         return best
 

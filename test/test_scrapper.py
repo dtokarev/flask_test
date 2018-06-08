@@ -44,8 +44,8 @@ def read_from_file(rel_path:str) -> str:
 
 
 def test_rutr_parsed_data():
-    html = read_from_file(os.path.join('data', 'rutr_page_html.html'))
-
+    # 1 normal
+    html = read_from_file(os.path.join('data', 'rutr_tdp_1.html'))
     parsed_data = Rutracker.parse_html(html)
     preferences = SearchPreferences(['Захват: Маршрут 300'], 2018)
 
@@ -69,9 +69,22 @@ def test_rutr_parsed_data():
     assert_equal(parsed_data.subtitle_format, 'softsub (ASS)')
     assert_equal(parsed_data.gender, 'драма')
 
+    # 2 little difference in styles
+    html = read_from_file(os.path.join('data', 'rutr_tdp_2.html'))
+    parsed_data = Rutracker.parse_html(html)
+
+    assert_equal(parsed_data.magnet_link, 'magnet:?xt=urn:btih:05A5C01B2759D583C9C194B865997BAD10528EE8&tr=http%3A%2F%2Fbt4.t-ru.org%2Fann%3Fmagnet')
+    assert_equal(parsed_data.size, 1457520)
+    assert_equal(parsed_data.country, 'Южная Корея')
+    assert_equal(parsed_data.quality, 'WEB-DL')
+    assert_equal(parsed_data.format, 'AVI')
+    assert_equal(parsed_data.duration, 6220)
+    assert_equal(parsed_data.translation, 'Любительский (многоголосый закадровый) Релиз группы')
+    assert_equal(parsed_data.gender, 'романтика, комедия, мелодрама')
+
 
 def test_get_page_link_from_search_result():
-    html = read_from_file(os.path.join('data', 'rutr_search_page_test_1.html'))
+    html = read_from_file(os.path.join('data', 'rutr_srp_1.html'))
 
     preferences = SearchPreferences(['Одержимая'], 2013)
     link = Rutracker.get_page_link_from_search_result(html, preferences)
@@ -81,7 +94,7 @@ def test_get_page_link_from_search_result():
     link = Rutracker.get_page_link_from_search_result(html, preferences)
     assert_true(link.endswith('5473278'))
 
-    html = read_from_file(os.path.join('data', 'rutr_search_page_test_2.html'))
+    html = read_from_file(os.path.join('data', 'rutr_srp_2.html'))
     preferences = SearchPreferences(['Квартира', 'The Apartment'], 1960)
     link = Rutracker.get_page_link_from_search_result(html, preferences)
     assert_true(link.endswith('2243255'))
