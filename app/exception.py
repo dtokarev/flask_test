@@ -2,9 +2,9 @@ class NonCriticalException(Exception):
     pass
 
 
-class ResultNotFoundException(Exception):
+class ResultNotFoundException(NonCriticalException):
     pass
 
 
-class ParserNonCriticalException(Exception):
+class ParserNonCriticalException(NonCriticalException):
     pass

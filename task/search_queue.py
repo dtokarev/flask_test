@@ -55,12 +55,11 @@ def search_and_parse(s):
         db.session.rollback()
         s = Search.query.get(s_id)
         if isinstance(e, NonCriticalException):
-            s.error = e
+            s.error = str(e)
             s.status = Search.statuses.index('not found')
         else:
             s.status = Search.statuses.index('error')
-            s.error = traceback.print_exc()
-        print(e)
+            s.error = traceback.format_exc()
     finally:
         db.session.commit()
 
@@ -95,7 +94,7 @@ def _get_from_queue():
     return s
 
 
-def _thread_sleep(lo: int =1, hi: int = 3):
+def _thread_sleep(lo: int =1, hi: int = 10):
     time.sleep(random.randint(lo, hi))
 
 

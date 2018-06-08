@@ -73,14 +73,25 @@ def test_rutr_parsed_data():
     html = read_from_file(os.path.join('data', 'rutr_tdp_2.html'))
     parsed_data = Rutracker.parse_html(html)
 
-    assert_equal(parsed_data.magnet_link, 'magnet:?xt=urn:btih:05A5C01B2759D583C9C194B865997BAD10528EE8&tr=http%3A%2F%2Fbt4.t-ru.org%2Fann%3Fmagnet')
     assert_equal(parsed_data.size, 1457520)
     assert_equal(parsed_data.country, 'Южная Корея')
     assert_equal(parsed_data.quality, 'WEB-DL')
     assert_equal(parsed_data.format, 'AVI')
     assert_equal(parsed_data.duration, 6220)
-    assert_equal(parsed_data.translation, 'Любительский (многоголосый закадровый) Релиз группы')
+    assert_equal(parsed_data.translation, 'Любительский (многоголосый закадровый)')
     assert_equal(parsed_data.gender, 'романтика, комедия, мелодрама')
+
+    # 3 little difference in styles
+    html = read_from_file(os.path.join('data', 'rutr_tdp_3.html'))
+    parsed_data = Rutracker.parse_html(html)
+
+    assert_equal(parsed_data.size, 1530920)
+    assert_equal(parsed_data.country, 'США / Paramount Pictures')
+    # assert_equal(parsed_data.quality, 'WEB-DL')
+    assert_equal(parsed_data.format, 'AVI')
+    assert_equal(parsed_data.duration, 7282)
+    assert_equal(parsed_data.translation, 'Профессиональный (полное дублирование) BD EUR |Лицензия')
+    assert_equal(parsed_data.gender, 'боевик, драма, комедия')
 
 
 def test_get_page_link_from_search_result():

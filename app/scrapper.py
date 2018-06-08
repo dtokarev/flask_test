@@ -11,6 +11,7 @@ from app.domain.model import Config
 from app.domain.search import SearchPreferences, Matcher
 from app.exception import ResultNotFoundException
 from app.service.search_service import get_matcher
+from app.utils.dict import get_by_list
 from app.utils.unit_converter import duration_human_to_sec, size_human_to_float
 
 
@@ -100,10 +101,15 @@ class Rutracker:
         bs = BeautifulSoup(html, "html.parser")
 
         body_text = str(bs.find('div', {'class': 'post_body'}))
-        body_text = body_text\
-            .replace('<br>', '\n')\
-            .replace('<br/>', '\n')\
-            .replace('<span class="post-br">\n</span>', '\n')
+        body_text = body_text.replace('<span class="post-b">', '\n<span class="post-b">')
+        # body_text = body_text.replace('<span class="post-br">\n</span>', '\n')
+        body_text = re.sub(r'<br/?>', '\n', body_text)
+        # remove any tags with double colon
+        body_text = re.sub(r'<[^>]+:[^>]+>([^<]+)<[^>]+>', r'\g<1>', body_text)
+        body_text = re.sub(r'</span>:[\n\s]+', '</span>: ', body_text)
+        body_text = re.sub(r':</span>[\n\s]+', '</span>: ', body_text)
+        # # no new lines after text
+        # body_text = re.sub(r'([$>])[\s\n]+', r'\g<1>', body_text)
 
         raw_data = {}
         for k, v in re.findall(r'<span class="post-b">(.*)</span>[ :]+(.+)', body_text):
@@ -121,15 +127,15 @@ class Rutracker:
         data.title = bs.find('title').get_text()
         data.size = int( size_human_to_float(bs.find('span', {'id': 'tor-size-humn'}).get_text(), 'KB') )
 
-        data.country = raw_data.get('Страна')
-        data.format = raw_data.get('Формат видео')
-        data.duration = duration_human_to_sec(raw_data.get('Продолжительность'))
+        data.country = get_by_list(raw_data, ['Страна', 'Выпущено'])
+        data.format = get_by_list(raw_data, ['Формат видео', 'Формат'])
+        data.duration = duration_human_to_sec(get_by_list(raw_data, ['Продолжительность']))
         data.translation = raw_data.get('Перевод')
         data.subtitle = raw_data.get('Субтитры')
         data.subtitle_format = raw_data.get('Формат субтитров')
         data.gender = raw_data.get('Жанр')
-        data.description = raw_data.get('Описание')
-        data.quality = raw_data.get('Качество видео')
+        data.description = get_by_list(raw_data, ['Описание', 'О фильме'])
+        data.quality = get_by_list(raw_data, ['Качество видео', 'Качество'])
         data.casting = raw_data.get('В ролях')
         data.video_info = raw_data.get('Видео')
         data.audio_info = raw_data.get('Аудио')
