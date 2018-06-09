@@ -87,7 +87,7 @@ class ParsedData(db.Model):
 
 
 class Download(db.Model):
-    STATUSES = ["new", "downloading", "finished", "updated", "error"]
+    STATUSES = ["new", "downloading", "completed", "updated", "error"]
     BT_STATES = ['queued', 'checking', 'downloading metadata', 'downloading', 'finished', 'seeding', 'allocating']
 
     id = db.Column(db.BigInteger, primary_key=True)
@@ -103,7 +103,7 @@ class Download(db.Model):
     changed_at = db.Column(db.DateTime(), onupdate=datetime.utcnow)
     downloaded_at = db.Column(db.DateTime())
     save_path = db.Column(db.String(250))
-    status = db.Column(db.String(250))
+    status = db.Column(db.Integer())
     bt_state = db.Column(db.String(250))
     error = db.Column(db.UnicodeText(4294000000))
 
