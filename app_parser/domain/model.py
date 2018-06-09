@@ -1,8 +1,9 @@
 import json
+import enum
 from datetime import datetime
 from typing import Union
 
-from app import db
+from app_parser import db
 
 
 class Config(db.Model):
@@ -16,26 +17,35 @@ class Config(db.Model):
         return record.value if record else None
 
 
+class ParsingStatus(enum.Enum):
+    NEW = 'new'
+    PROCESSING = 'processing'
+    ERROR = 'error'
+    NOT_FOUND = 'not found'
+    COMPLETED = 'completed'
+    SEND = 'send'
+
+class ResourceType(enum.Enum):
+    MOVIE = 'movie'
+    SERIES = 'series'
+
+
 class Search(db.Model):
     id = db.Column(db.BigInteger(), primary_key=True)
     title_ru = db.Column(db.String(250))
     title_en = db.Column(db.String(250))
     kinopoisk_id = db.Column(db.String(250), unique=True, nullable=True)
-    page_link = db.Column(db.String(250))
     error = db.Column(db.UnicodeText(4294000000))
     year = db.Column(db.SmallInteger, nullable=True)
-    type = db.Column(db.SmallInteger, index=True, nullable=False, default=0)
-    status = db.Column(db.SmallInteger, index=True, nullable=False, default=0)
+    type = db.Column(db.Enum(ResourceType), index=True, nullable=False, default=ResourceType.MOVIE)
+    status = db.Column(db.Enum(ParsingStatus), index=True, nullable=False, default=ParsingStatus.NEW)
     import_source = db.Column(db.String(250))
     import_source_id = db.Column(db.String(250))
     raw = db.Column(db.Text())
     created_at = db.Column(db.DateTime(), default=datetime.utcnow, nullable=False)
 
-    parsed_data = db.relationship("DownloadMeta", uselist=False, backref="search")
+    parsed_data = db.relationship("ParsedData", uselist=False, backref="search")
     download = db.relationship("Download", uselist=False, backref="search")
-
-    types = ['movie', 'series']
-    statuses = ['new', 'processing', 'completed', 'error', 'not found']
 
     def get_from_raw(self, key: str) -> Union[str, None]:
         try:
@@ -45,21 +55,23 @@ class Search(db.Model):
             return None
 
 
-class DownloadMeta(db.Model):
+class ParsedData(db.Model):
     id = db.Column(db.BigInteger(), primary_key=True)
     search_id = db.Column(db.Integer(), db.ForeignKey('search.id'), nullable=False)
 
     kinopoisk_id = db.Column(db.String(250))
     import_source_id = db.Column(db.String(250))
 
+    page_link = db.Column(db.String(250))
     raw_page_data = db.Column(db.UnicodeText(4294000000))
     raw_page_html = db.Column(db.UnicodeText(4294000000))
     quality = db.Column(db.String(250))
     format = db.Column(db.String(250))
     country = db.Column(db.String(250))
     size = db.Column(db.String(250))
-    title_en = db.Column(db.Text())
-    title_ru = db.Column(db.Text())
+    title = db.Column(db.Text())
+    title_ru = db.Column(db.String(250))
+    title_en = db.Column(db.String(250))
     duration = db.Column(db.Integer)
     translation = db.Column(db.String(250))
     subtitle = db.Column(db.String(250))
@@ -70,13 +82,17 @@ class DownloadMeta(db.Model):
     casting = db.Column(db.Text())
     video_info = db.Column(db.Text())
     audio_info = db.Column(db.Text())
+    magnet_link = db.Column(db.Text())
 
 
 class Download(db.Model):
+    STATUSES = ["new", "downloading", "finished", "updated", "error"]
+    STATES = ['queued', 'checking', 'downloading metadata', 'downloading', 'finished', 'seeding', 'allocating']
+
     id = db.Column(db.BigInteger, primary_key=True)
     search_id = db.Column(db.Integer, db.ForeignKey('search.id'), nullable=False)
 #     type = db.Column(db.Integer, nullable=False)
-    progress = db.Column(db.Float())
+    progress = db.Column(db.Float(), default=0)
     download_rate_kb = db.Column(db.Float())
     upload_rate_kb = db.Column(db.Float())
     num_peers = db.Column(db.Integer())
@@ -87,9 +103,6 @@ class Download(db.Model):
     downloaded_at = db.Column(db.DateTime())
     save_path = db.Column(db.String(250))
     status = db.Column(db.Integer, nullable=False)
-
-    statuses = ["new", "downloading", "finished", "updated", "error"]
-    states = ['queued', 'checking', 'downloading metadata', 'downloading', 'finished', 'seeding', 'allocating']
 
 
 class Resource(db.Model):

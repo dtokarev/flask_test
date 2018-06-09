@@ -1,5 +1,5 @@
-from app import app, db
-from app.domain.model import *
+from app_parser import app
+from app_parser.domain.model import *
 
 
 @app.shell_context_processor

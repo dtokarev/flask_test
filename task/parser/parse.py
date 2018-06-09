@@ -4,12 +4,11 @@ import traceback
 
 from sqlalchemy import func
 
-from app import db
-from app.domain.dto import ParsedData
-from app.domain.model import Search, Config, Download
-from app.domain.search import SearchPreferences
-from app.exception import NonCriticalException
-from app.scrapper import Rutracker
+from app_parser import db
+from app_parser.domain.model import Search, Config, Download, ParsingStatus, ParsedData
+from app_parser.domain.search import SearchPreferences
+from app_parser.exception import NonCriticalException
+from app_parser.scrapper import Rutracker
 
 tracker = Rutracker(Config.get("RUTR_USER"), Config.get("RUTR_PASS"))
 
@@ -32,7 +31,7 @@ def run():
 def search_and_parse(s):
     s_id = s.id
     try:
-        s.status = Search.statuses.index('processing')
+        s.status = ParsingStatus.PROCESSING
         db.session.commit()
 
         preferences = SearchPreferences(keywords=[s.title_ru, s.title_en], year=s.year)
@@ -40,54 +39,50 @@ def search_and_parse(s):
         _thread_sleep()
 
         raw_html = tracker.get_page_content(link)
-        data = Rutracker.parse_html(raw_html)
+        parsed_data = Rutracker.parse_html(raw_html)
+        parsed_data.page_link = link
 
-        if not data:
-            s.status = Search.statuses.index('not found')
-            return
-
-        s.page_link = link
-        s.status = Search.statuses.index('completed')
-
-        add_resource_meta(s, data)
-        add_download(s, data)
+        s.status = ParsingStatus.COMPLETED
+        save_parsed_data(s, parsed_data)
+        add_download(s, parsed_data)
     except Exception as e:
         db.session.rollback()
         s = Search.query.get(s_id)
         if isinstance(e, NonCriticalException):
             s.error = str(e)
-            s.status = Search.statuses.index('not found')
+            s.status = ParsingStatus.NOT_FOUND
         else:
-            s.status = Search.statuses.index('error')
+            s.status = ParsingStatus.ERROR
             s.error = traceback.format_exc()
     finally:
         db.session.commit()
 
 
-def add_resource_meta(s: Search, data: ParsedData) -> None:
-    model = data.to_meta_model()
-    model.search_id = s.id
-    model.kinopoisk_id = s.kinopoisk_id
-    model.title_en = s.title_en
-    model.title_ru = s.title_ru
-    model.import_source_id = s.import_source_id
-    model.year = s.year
+def save_parsed_data(s: Search, parsed_data: ParsedData) -> None:
+    parsed_data.search_id = s.id
+    parsed_data.kinopoisk_id = s.kinopoisk_id
+    parsed_data.title_en = s.title_en
+    parsed_data.title_ru = s.title_ru
+    parsed_data.import_source_id = s.import_source_id
+    parsed_data.year = s.year
 
-    db.session.add(model)
+    db.session.add(parsed_data)
 
 
 def add_download(s: Search, data: ParsedData) -> None:
-    model = data.to_download_model()
+    # TODO: refactor, send via REST to other microservice
+    model = Download()
+    model.magnet_link = data.magnet_link
     model.search_id = s.id
     model.progress = 0
-    model.status = Download.statuses.index('new')
+    model.status = Download.STATUSES.index('new')
 
     db.session.add(model)
 
 
 def _get_from_queue():
     while True:
-        s = Search.query.filter_by(status=Search.statuses.index('new')).order_by(func.rand()).first()
+        s = Search.query.filter_by(status=ParsingStatus.NEW).order_by(func.rand()).first()
         if len(s.title_ru) > 5:
             break
 

@@ -4,10 +4,10 @@ from time import sleep
 
 from nose.tools import *
 
-from app.domain.model import Config
-from app.domain.search import SearchPreferences
-from app.scrapper import Rutracker
-from app.utils.unit_converter import size_human_to_float
+from app_parser.domain.model import Config
+from app_parser.domain.search import SearchPreferences
+from app_parser.scrapper import Rutracker
+from app_parser.utils.unit_converter import size_human_to_float
 
 tracker = Rutracker(Config.get("RUTR_USER"), Config.get("RUTR_PASS"))
 
@@ -53,8 +53,8 @@ def test_rutr_parsed_data():
     size_hi = size_human_to_float(preferences.acceptable_size_range[1], 'KB')
     assert_true(size_lo <= parsed_data.size <= size_hi)
 
-    assert_is_not_none(parsed_data.raw_data)
-    assert_is_not_none(parsed_data.raw_html)
+    assert_is_not_none(parsed_data.raw_page_data)
+    assert_is_not_none(parsed_data.raw_page_html)
 
     assert_equal(parsed_data.magnet_link, 'magnet:?xt=urn:btih:B1C95EB63BB00A1A31A29FEE1EA6D9021D048A0D&tr=http%3A%2F%2Fbt.t-ru.org%2Fann%3Fmagnet')
     assert_equal(parsed_data.title, 'Захват: Маршрут 300 / Chatifa: Kav 300 (Ротем Шамир / Rotem Shamir) [2018, Израиль, драма, HDTVRip] + Sub Rus, Heb + Original Heb :: RuTracker.org')

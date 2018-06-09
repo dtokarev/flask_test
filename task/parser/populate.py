@@ -1,7 +1,7 @@
 import json
 
-from app import db
-from app.domain.model import Search
+from app_parser import db
+from app_parser.domain.model import Search
 
 
 def run():
@@ -32,7 +32,7 @@ def run():
             s.kinopoisk_id = kinopoisk_id
             s.import_source_id = movie.get('token')
             s.year = movie.get('year')
-            s.type = Search.types.index('movie')
+            s.type = Search.TYPES.index('movie')
             s.import_source = source_name
             s.raw = json.dumps(movie, ensure_ascii=False)
 

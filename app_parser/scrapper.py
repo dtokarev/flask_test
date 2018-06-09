@@ -1,18 +1,17 @@
 import os
 import pickle
 import re
-from typing import Union, List
+from typing import Union
 
 import requests
 from bs4 import BeautifulSoup
 
-from app.domain.dto import ParsedData
-from app.domain.model import Config
-from app.domain.search import SearchPreferences, Matcher
-from app.exception import ResultNotFoundException
-from app.service.search_service import get_matcher
-from app.utils.dict import get_by_list
-from app.utils.unit_converter import duration_human_to_sec, size_human_to_float
+from app_parser.domain.model import Config, ParsedData
+from app_parser.domain.search import SearchPreferences, Matcher
+from app_parser.exception import ResultNotFoundException
+from app_parser.service.search_service import get_matcher
+from app_parser.utils.dict import get_by_list
+from app_parser.utils.unit_converter import duration_human_to_sec, size_human_to_float
 
 
 class Rutracker:
@@ -69,7 +68,7 @@ class Rutracker:
 
         raise ResultNotFoundException('no link found for {}'.format(preferences))
 
-    def get_search_result_page(self, key: str):
+    def get_search_result_page(self, key: str) -> bytes:
         post_data = {
             'nm': key,
             'prev_new': 0,
@@ -87,10 +86,8 @@ class Rutracker:
     def get_page_content(self, link: str) -> str:
         print('parsing link {}'.format(link))
         response = self.session.get(link)
-        html = response.text
-        html = re.sub(r'<hr[^>]+>', '\n', html)
 
-        return html
+        return response.text
 
     @staticmethod
     def parse_html(html: str) -> ParsedData:
@@ -101,6 +98,7 @@ class Rutracker:
         bs = BeautifulSoup(html, "html.parser")
 
         body_text = str(bs.find('div', {'class': 'post_body'}))
+        body_text = re.sub(r'<hr[^>]+>', '\n', body_text)
         body_text = body_text.replace('<span class="post-b">', '\n<span class="post-b">')
         # body_text = body_text.replace('<span class="post-br">\n</span>', '\n')
         body_text = re.sub(r'<br/?>', '\n', body_text)
@@ -121,8 +119,8 @@ class Rutracker:
             raw_data[k] = v
 
         data = ParsedData()
-        data.raw_data = raw_data
-        data.raw_html = html
+        data.raw_page_data = raw_data
+        data.raw_page_html = html
         data.magnet_link = bs.find('a', {'class': 'magnet-link'})['href']
         data.title = bs.find('title').get_text()
         data.size = int( size_human_to_float(bs.find('span', {'id': 'tor-size-humn'}).get_text(), 'KB') )

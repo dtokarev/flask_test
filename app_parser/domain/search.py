@@ -1,7 +1,7 @@
 from typing import List
 
-from app.exception import ResultNotFoundException
-from app.utils.search import generate_keywords
+from app_parser.exception import ResultNotFoundException
+from app_parser.utils.search import generate_keywords
 
 
 class Matcher:

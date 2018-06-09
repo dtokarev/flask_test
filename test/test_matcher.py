@@ -1,8 +1,8 @@
 from nose.tools import assert_true, assert_false, assert_is
 
-from app.domain.search import SearchPreferences, Matcher
-from app.service.search_service import get_matcher
-from app.utils.search import generate_keywords
+from app_parser.domain.search import SearchPreferences, Matcher
+from app_parser.service.search_service import get_matcher
+from app_parser.utils.search import generate_keywords
 
 preferences = SearchPreferences(keywords=['The Shawshank Redemption'], year='1994')
 preferences.acceptable_size_range = '1.3 GB', '1.6 GB'

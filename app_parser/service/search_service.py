@@ -1,5 +1,5 @@
-from app.domain.search import SearchPreferences, Matcher
-from app.utils.unit_converter import size_human_to_float
+from app_parser.domain.search import SearchPreferences, Matcher
+from app_parser.utils.unit_converter import size_human_to_float
 
 
 def get_matcher(preferences: SearchPreferences, actual_data: dict):

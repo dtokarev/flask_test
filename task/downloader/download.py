@@ -3,7 +3,7 @@ import time
 
 import libtorrent as lt
 from sqlalchemy import func
-from app.domain.model import Download
+from app_parser.domain.model import Download
 
 
 def run():
@@ -49,7 +49,7 @@ def download(d: Download):
 
 
 def _get_from_queue():
-    return Download.query.filter_by(status=Download.statuses.index('new')).order_by(func.rand()).first()
+    return Download.query.filter_by(status=Download.STATUSES.index('new')).order_by(func.rand()).first()
 
 
 run()

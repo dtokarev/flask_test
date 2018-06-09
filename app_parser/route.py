@@ -1,4 +1,4 @@
-from app import app
+from app_parser import app
 
 
 @app.route('/')

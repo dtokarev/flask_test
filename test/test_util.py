@@ -2,7 +2,7 @@ from nose.tools import *
 
 
 def test_search_generate_keyword_set():
-    from app.utils.search import generate_keywords
+    from app_parser.utils.search import generate_keywords
 
     keys = generate_keywords('some movie name')
     assert_list_equal(['some movie name'], keys)
@@ -18,7 +18,7 @@ def test_search_generate_keyword_set():
 
 
 def test_unit_converter_size_human_to_float():
-    from app.utils.unit_converter import size_human_to_float
+    from app_parser.utils.unit_converter import size_human_to_float
 
     assert_equal(1, size_human_to_float('1 KB', 'KB'))
     assert_equal(1000000, size_human_to_float('1 GB', 'KB'))
@@ -32,7 +32,7 @@ def test_unit_converter_size_human_to_float():
 
 
 def test_unit_converter_duration_human_to_sec():
-    from app.utils.unit_converter import duration_human_to_sec
+    from app_parser.utils.unit_converter import duration_human_to_sec
 
     assert_equal(60, duration_human_to_sec('00:01:00'))
     assert_equal(60, duration_human_to_sec('0:01:00'))

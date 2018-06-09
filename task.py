@@ -15,4 +15,5 @@ filePath = os.path.join(TASK_FOLDER, task + '.py')
 if not os.path.isfile(filePath):
     print('task not found {}'.format(filePath))
 
-importlib.import_module('task.' + task)
+module = 'task.' + task.replace('/', '.')
+importlib.import_module(module)

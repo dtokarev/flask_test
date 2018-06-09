@@ -4,7 +4,7 @@ from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
-from app.config import Config
+from app_parser.config import Config
 
 
 def create_app(test_config=None):
@@ -25,5 +25,5 @@ app = create_app()
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-from app import route
-from app.domain import model
+from app_parser import route
+from app_parser.domain import model
