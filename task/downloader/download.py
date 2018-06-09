@@ -10,7 +10,8 @@ from app_parser import db
 from app_parser.domain.model import Download
 
 
-BT_POOL_LIMIT = 2
+BT_POOL_LIMIT = 1           # num of concurrent downloads
+BT_CALM_TERM_LIMIT = 30     # terminate if bt is calm after num of times
 
 download_pool_ids = set()
 
@@ -26,8 +27,9 @@ def run():
             continue
 
         t = threading.Thread(target=run_one)
-        print('new thread started {}'.format(t))
+        t.daemon = True
         t.start()
+        print('new thread started {}'.format(t))
 
 
 def run_one():
@@ -43,7 +45,6 @@ def run_one():
     except Exception as e:
         d.error = str(e)
         d.status = Download.STATUSES.index('error')
-        db.session.commit()
     finally:
         db.session.commit()
         download_pool_ids.remove(d.id)
@@ -61,18 +62,29 @@ def download(d: Download):
     handle = lt.add_magnet_uri(ses, d.magnet_link, params)
     d.save_path = path
 
+    status_calm_limit = BT_CALM_TERM_LIMIT
     print('downloading metadata {}'.format(d.id))
     while not handle.has_metadata():
         bt_status = handle.status()
         update_download(d, bt_status)
         time.sleep(5)
 
+        status_calm_limit -= 1
+        if status_calm_limit < 0:
+            raise Exception('torrent status not changed {} times'.format(BT_CALM_TERM_LIMIT))
+
+    status_calm_limit = BT_CALM_TERM_LIMIT
     print('downloading {} to {}'.format(d.id, d.save_path))
     while handle.status().state != lt.torrent_status.seeding:
+        term_attr_before = d.download_rate_kb
         bt_status = handle.status()
         d.status = Download.STATUSES.index('downloading')
         update_download(d, bt_status)
         time.sleep(5)
+
+        status_calm_limit = status_calm_limit - 1 if term_attr_before == d.download_rate_kb else BT_CALM_TERM_LIMIT
+        if status_calm_limit < 0:
+            raise Exception('torrent status not changed {} times'.format(BT_CALM_TERM_LIMIT))
 
     d.status = Download.STATUSES.index('completed')
     d.downloaded_at = datetime.utcnow()
