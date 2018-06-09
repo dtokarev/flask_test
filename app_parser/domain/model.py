@@ -25,6 +25,7 @@ class ParsingStatus(enum.Enum):
     COMPLETED = 'completed'
     SEND = 'send'
 
+
 class ResourceType(enum.Enum):
     MOVIE = 'movie'
     SERIES = 'series'
@@ -87,22 +88,24 @@ class ParsedData(db.Model):
 
 class Download(db.Model):
     STATUSES = ["new", "downloading", "finished", "updated", "error"]
-    STATES = ['queued', 'checking', 'downloading metadata', 'downloading', 'finished', 'seeding', 'allocating']
+    BT_STATES = ['queued', 'checking', 'downloading metadata', 'downloading', 'finished', 'seeding', 'allocating']
 
     id = db.Column(db.BigInteger, primary_key=True)
     search_id = db.Column(db.Integer, db.ForeignKey('search.id'), nullable=False)
-#     type = db.Column(db.Integer, nullable=False)
+    # type = db.Column(db.Integer, nullable=False)
     progress = db.Column(db.Float(), default=0)
     download_rate_kb = db.Column(db.Float())
     upload_rate_kb = db.Column(db.Float())
+    total_download_kb = db.Column(db.Float())
     num_peers = db.Column(db.Integer())
     magnet_link = db.Column(db.Text())
-    torrent_state = db.Column(db.String(250))
     created_at = db.Column(db.DateTime(), default=datetime.utcnow)
     changed_at = db.Column(db.DateTime(), onupdate=datetime.utcnow)
     downloaded_at = db.Column(db.DateTime())
     save_path = db.Column(db.String(250))
-    status = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(250))
+    bt_state = db.Column(db.String(250))
+    error = db.Column(db.UnicodeText(4294000000))
 
 
 class Resource(db.Model):
