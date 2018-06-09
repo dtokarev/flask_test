@@ -1,0 +1,2 @@
+virtualenv .genv -p python3 --system-site-packages
+sudo apt install python3-libtorrent

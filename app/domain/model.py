@@ -83,6 +83,7 @@ class Download(db.Model):
     magnet_link = db.Column(db.Text())
     torrent_state = db.Column(db.String(250))
     created_at = db.Column(db.DateTime(), default=datetime.utcnow)
+    changed_at = db.Column(db.DateTime(), onupdate=datetime.utcnow)
     downloaded_at = db.Column(db.DateTime())
     save_path = db.Column(db.String(250))
     status = db.Column(db.Integer, nullable=False)
