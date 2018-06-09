@@ -58,7 +58,7 @@ def test_rutr_parsed_data():
 
     assert_equal(parsed_data.magnet_link, 'magnet:?xt=urn:btih:B1C95EB63BB00A1A31A29FEE1EA6D9021D048A0D&tr=http%3A%2F%2Fbt.t-ru.org%2Fann%3Fmagnet')
     assert_equal(parsed_data.title, 'Захват: Маршрут 300 / Chatifa: Kav 300 (Ротем Шамир / Rotem Shamir) [2018, Израиль, драма, HDTVRip] + Sub Rus, Heb + Original Heb :: RuTracker.org')
-    assert_equal(parsed_data.size, 1530920)
+    assert_equal(parsed_data.size, 1460000)
 
     assert_equal(parsed_data.country, 'Израиль')
     assert_equal(parsed_data.quality, 'HDTVRip')
@@ -73,7 +73,7 @@ def test_rutr_parsed_data():
     html = read_from_file(os.path.join('data', 'rutr_tdp_2.html'))
     parsed_data = Rutracker.parse_html(html)
 
-    assert_equal(parsed_data.size, 1457520)
+    assert_equal(parsed_data.size, 1390000)
     assert_equal(parsed_data.country, 'Южная Корея')
     assert_equal(parsed_data.quality, 'WEB-DL')
     assert_equal(parsed_data.format, 'AVI')
@@ -85,7 +85,7 @@ def test_rutr_parsed_data():
     html = read_from_file(os.path.join('data', 'rutr_tdp_3.html'))
     parsed_data = Rutracker.parse_html(html)
 
-    assert_equal(parsed_data.size, 1530920)
+    assert_equal(parsed_data.size, 1460000)
     assert_equal(parsed_data.country, 'США / Paramount Pictures')
     # assert_equal(parsed_data.quality, 'WEB-DL')
     assert_equal(parsed_data.format, 'AVI')
