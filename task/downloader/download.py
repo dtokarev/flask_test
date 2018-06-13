@@ -10,7 +10,7 @@ from app_parser import db
 from app_parser.domain.model import Download
 
 
-BT_POOL_LIMIT = 1           # num of concurrent downloads
+BT_POOL_LIMIT = 30          # num of concurrent downloads
 BT_CALM_TERM_LIMIT = 30     # terminate if bt is calm after num of times
 
 download_pool_ids = set()
@@ -37,6 +37,7 @@ def run_one():
 
     if not d:
         print('no item to download')
+        time.sleep(60)
         return
 
     try:

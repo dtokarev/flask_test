@@ -58,7 +58,7 @@ class Search(db.Model):
 
 class ParsedData(db.Model):
     id = db.Column(db.BigInteger(), primary_key=True)
-    search_id = db.Column(db.Integer(), db.ForeignKey('search.id'), nullable=False)
+    search_id = db.Column(db.BigInteger(), db.ForeignKey('search.id'), nullable=False)
 
     kinopoisk_id = db.Column(db.String(250))
     import_source_id = db.Column(db.String(250))
@@ -91,7 +91,7 @@ class Download(db.Model):
     BT_STATES = ['queued', 'checking', 'downloading metadata', 'downloading', 'finished', 'seeding', 'allocating']
 
     id = db.Column(db.BigInteger, primary_key=True)
-    search_id = db.Column(db.Integer, db.ForeignKey('search.id'), nullable=False)
+    search_id = db.Column(db.BigInteger, db.ForeignKey('search.id'), nullable=False)
     # type = db.Column(db.Integer, nullable=False)
     progress = db.Column(db.Float(), default=0)
     download_rate_kb = db.Column(db.Float())
@@ -109,6 +109,7 @@ class Download(db.Model):
 
 
 class Resource(db.Model):
+    __bind_key__ = 'db_resource'
     id = db.Column(db.BigInteger, primary_key=True)
     type = db.Column(db.SmallInteger, index=True, nullable=False)
     domain = db.Column(db.String(250), nullable=False)
@@ -122,6 +123,7 @@ class Resource(db.Model):
 
 
 class ResourceMedia(db.Model):
+    __bind_key__ = 'db_resource'
     id = db.Column(db.BigInteger, primary_key=True)
     resource_id = db.Column(db.BigInteger, db.ForeignKey('resource.id'), nullable=False)
     type = db.Column(db.SmallInteger, index=True, nullable=False)
