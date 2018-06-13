@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 KB = 'KB'
 MB = 'MB'
@@ -11,7 +12,7 @@ units_in_bytes = {
 }
 
 
-def size_human_to_float(human_str: str, out_unit: str='KB', precision: int=2) -> float:
+def size_human_to_float(human_str: str, out_unit: str='KB', precision: int=2) -> Optional[float]:
     """
     parses string '10 GB' to number in specified units
     :param precision:
@@ -19,6 +20,9 @@ def size_human_to_float(human_str: str, out_unit: str='KB', precision: int=2) ->
     :param out_unit:
     :return:
     """
+    if not human_str:
+        return None
+
     human_str = human_str.replace('\n', ' ')
     data = re.search(r"([0-9.]+)\s*(KB|MB|GB)", human_str, re.IGNORECASE)
 
@@ -36,9 +40,11 @@ def size_human_to_float(human_str: str, out_unit: str='KB', precision: int=2) ->
     return round(in_bytes / units_in_bytes[out_unit.upper()], precision)
 
 
-def duration_human_to_sec(human_str: str) -> int:
+def duration_human_to_sec(human_str: str) -> Optional[int]:
     try:
         h, m, s = tuple(int(v.strip()) for v in human_str.split(':'))
         return h*3600 + m*60 + s
     except:
-        return int(human_str)
+        if human_str and human_str.isdigit():
+            return int(human_str)
+        return None

@@ -67,7 +67,7 @@ class SearchPreferences:
 
     def __init__(self, keywords: List, year: int = None, acceptable_size_range=('700 MB', '1.6 GB')):
         self.acceptable_size_range = acceptable_size_range
-        self.min_seeders = 3
+        self.min_seeders = 1
         self.keywords = keywords
         self.generated_keywords = generate_keywords(*keywords, year=year)
         # self.best_size_range = '700 MB', '800 MB'
