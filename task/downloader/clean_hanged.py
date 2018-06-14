@@ -7,11 +7,11 @@ from app_parser.domain.model import Download
 
 def run():
     while True:
-        _clean_clean_hanged_downloads()
+        _clean_hanged_downloads()
         time.sleep(10)
 
 
-def _clean_clean_hanged_downloads():
+def _clean_hanged_downloads():
     t = datetime.utcnow() - timedelta(minutes=10)
     downloads = Download.query\
         .filter_by(status=Download.STATUSES.index('downloading'))\

@@ -7,6 +7,7 @@ def make_shell_context():
     return {
         'db': db,
         'Search': Search,
+        'ParsedData': ParsedData,
         'Config': Config,
     }
 

@@ -54,7 +54,6 @@ def test_rutr_parsed_data():
     assert_true(size_lo <= parsed_data.size <= size_hi)
 
     assert_is_not_none(parsed_data.raw_page_data)
-    assert_is_not_none(parsed_data.raw_page_html)
 
     assert_equal(parsed_data.magnet_link, 'magnet:?xt=urn:btih:B1C95EB63BB00A1A31A29FEE1EA6D9021D048A0D&tr=http%3A%2F%2Fbt.t-ru.org%2Fann%3Fmagnet')
     assert_equal(parsed_data.title, 'Захват: Маршрут 300 / Chatifa: Kav 300 (Ротем Шамир / Rotem Shamir) [2018, Израиль, драма, HDTVRip] + Sub Rus, Heb + Original Heb :: RuTracker.org')

@@ -120,7 +120,6 @@ class Rutracker:
 
         data = ParsedData()
         data.raw_page_data = raw_data
-        data.raw_page_html = html
         data.magnet_link = bs.find('a', {'class': 'magnet-link'})['href']
         data.title = bs.find('title').get_text()
         data.size = int( size_human_to_float(bs.find('span', {'id': 'tor-size-humn'}).get_text(), 'KB') )

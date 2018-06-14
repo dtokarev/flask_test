@@ -2,6 +2,7 @@ import json
 import enum
 from datetime import datetime
 from typing import Union
+from sqlalchemy.orm import validates
 
 from app_parser import db
 
@@ -65,25 +66,32 @@ class ParsedData(db.Model):
 
     page_link = db.Column(db.String(250))
     raw_page_data = db.Column(db.UnicodeText(4294000000))
-    raw_page_html = db.Column(db.UnicodeText(4294000000))
     quality = db.Column(db.String(250))
     format = db.Column(db.String(250))
     country = db.Column(db.String(250))
     size = db.Column(db.String(250))
-    title = db.Column(db.Text())
+    title = db.Column(db.Text(65535))
     title_ru = db.Column(db.String(250))
     title_en = db.Column(db.String(250))
     duration = db.Column(db.Integer)
     translation = db.Column(db.String(250))
     subtitle = db.Column(db.String(250))
     subtitle_format = db.Column(db.String(250))
-    gender = db.Column(db.Text())
-    description = db.Column(db.Text())
+    gender = db.Column(db.Text(65535))
+    description = db.Column(db.Text(65535))
     year = db.Column(db.Integer())
-    casting = db.Column(db.Text())
-    video_info = db.Column(db.Text())
-    audio_info = db.Column(db.Text())
-    magnet_link = db.Column(db.Text())
+    casting = db.Column(db.Text(65535))
+    video_info = db.Column(db.Text(65535))
+    audio_info = db.Column(db.Text(65535))
+    magnet_link = db.Column(db.Text(65535))
+
+    @validates('quality', 'format', 'country', 'title', 'translation', 'subtitle',
+               'subtitle_format', 'gender', 'description', 'casting', 'video_info', 'audio_info')
+    def validate_code(self, key, value):
+        max_len = getattr(self.__class__, key).prop.columns[0].type.length
+        if value and len(value) > max_len:
+            return value[:max_len]
+        return value
 
 
 class Download(db.Model):
