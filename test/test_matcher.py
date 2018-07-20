@@ -1,7 +1,7 @@
 from nose.tools import assert_true, assert_false, assert_is
 
 from app_parser.domain.search import SearchPreferences, Matcher
-from app_parser.service.search_service import get_matcher
+from app_parser.service.search_service import create_matcher
 from app_parser.utils.search import generate_keywords
 
 preferences = SearchPreferences(keywords=['The Shawshank Redemption'], year='1994')
@@ -9,7 +9,7 @@ preferences.acceptable_size_range = '1.3 GB', '1.6 GB'
 
 
 def test_matcher():
-    matcher = get_matcher(
+    matcher = create_matcher(
         preferences,
         {
             SearchPreferences.KEY_SIZE: '1.4 GB',
@@ -20,26 +20,26 @@ def test_matcher():
     assert_true(matcher.acceptable_size_matched)
     assert_true(matcher.min_seeders_matched)
 
-    matcher = get_matcher(
+    matcher = create_matcher(
         preferences,
         {
             SearchPreferences.KEY_SIZE: '1.9 GB',
             SearchPreferences.KEY_SEEDERS: 1,
             SearchPreferences.KEY_KEYWORD: 'The Shawshank Redemption'
         })
-    assert_false(matcher.min_seeders_matched)
+    assert_true(matcher.min_seeders_matched)
 
 
 def test_best_matcher():
     matchers = []
 
-    matcher1 = get_matcher(preferences, {
+    matcher1 = create_matcher(preferences, {
         SearchPreferences.KEY_SIZE: '1.9 GB',
         SearchPreferences.KEY_SEEDERS: 10,
         SearchPreferences.KEY_KEYWORD: 'The Shawshank Redemption'
     })
     matchers.append(matcher1)
-    matcher2 = get_matcher(
+    matcher2 = create_matcher(
         preferences,
         {
             SearchPreferences.KEY_SIZE: '1.4 GB',
@@ -47,7 +47,7 @@ def test_best_matcher():
             SearchPreferences.KEY_KEYWORD: 'The Shawshank Redemption'
         })
     matchers.append(matcher2)
-    matcher3 = get_matcher(
+    matcher3 = create_matcher(
         preferences,
         {
             SearchPreferences.KEY_SIZE: '1.4 GB',
@@ -60,7 +60,7 @@ def test_best_matcher():
     assert_is(matcher2, Matcher.get_best(matchers))
 
     # prepend to list
-    matcher4 = get_matcher(
+    matcher4 = create_matcher(
         preferences,
         {
             SearchPreferences.KEY_SIZE: '1.4 GB',
@@ -71,7 +71,7 @@ def test_best_matcher():
     assert_is(matcher4, Matcher.get_best(matchers))
 
     # many seeders
-    matcher5 = get_matcher(
+    matcher5 = create_matcher(
         preferences,
         {
             SearchPreferences.KEY_SIZE: '1.4 GB',

@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from app_parser.domain.model import Config, ParsedData
 from app_parser.domain.search import SearchPreferences, Matcher
 from app_parser.exception import ResultNotFoundException
-from app_parser.service.search_service import get_matcher
+from app_parser.service.search_service import create_matcher
 from app_parser.utils.dict import get_by_list
 from app_parser.utils.unit_converter import duration_human_to_sec, size_human_to_float
 
@@ -149,7 +149,6 @@ class Rutracker:
             size_tag = row.find('td', {'class': 'tor-size'})
             link_tag = row.find('a', {'class': 'tLink'})
             seeders_tag = row.find('b', {'class': 'seedmed'})
-            # different UI message if no seeders
             seeders = int(seeders_tag.get_text()) if seeders_tag else 0
             if not size_tag:
                 continue
@@ -161,7 +160,7 @@ class Rutracker:
             }
 
             # check size, format etc
-            matcher = get_matcher(preferences, actual_data)
+            matcher = create_matcher(preferences, actual_data)
             matcher.bind_link(row.find('div', {'class': 't-title'}).find('a')['href'])
             matchers.append(matcher)
 

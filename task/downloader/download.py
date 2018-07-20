@@ -16,7 +16,7 @@ BT_CALM_TERM_LIMIT = 30     # terminate if bt is calm after num of times
 download_pool_ids = set()
 
 ses = lt.session()
-ses.listen_on(16000, 17000)
+ses.listen_on(80, 80)
 ses.start_dht()
 
 
