@@ -13,9 +13,12 @@ class Config(db.Model):
     value = db.Column(db.String(2000))
 
     @staticmethod
-    def get(key: str) -> str:
+    def get(key: str, vtype=str):
         record = Config.query.filter_by(name=key).first()
-        return record.value if record else None
+        if vtype == bool:
+            return True if record.value.lower() in ['1', 'true', 'yes'] else False
+
+        return vtype(record.value) if record else None
 
 
 class ParsingStatus(enum.Enum):
