@@ -21,21 +21,20 @@ class Config(db.Model):
         return vtype(record.value) if record else None
 
 
-class ParsingStatus(enum.Enum):
-    NEW = 'new'
-    PROCESSING = 'processing'
-    ERROR = 'error'
-    NOT_FOUND = 'not found'
-    COMPLETED = 'completed'
-    SEND = 'send'
-
-
 class ResourceType(enum.Enum):
-    MOVIE = 'movie'
-    SERIES = 'series'
+    MOVIE = 'MOVIE'
+    SERIES = 'SERIES'
 
 
 class Search(db.Model):
+    class ParsingStatus(enum.Enum):
+        NEW = 'NEW'
+        PROCESSING = 'PROCESSING'
+        ERROR = 'ERROR'
+        NOT_FOUND = 'NOT_FOUND'
+        COMPLETED = 'COMPLETED'
+        SEND = 'SEND'
+
     id = db.Column(db.BigInteger(), primary_key=True)
     title_ru = db.Column(db.String(250))
     title_en = db.Column(db.String(250))
@@ -97,8 +96,20 @@ class ParsedData(db.Model):
         return value
 
 
+class DownloadStatus(enum.Enum):
+    MOVIE = 'movie'
+    SERIES = 'series'
+
+
 class Download(db.Model):
-    STATUSES = ["new", "downloading", "completed", "updated", "error"]
+    class STATUSES(enum.Enum):
+        NEW = 'NEW'
+        UPDATED = 'UPDATED'                 # торрент обновился, взять новые файлы
+        DOWNLOADING = 'DOWNLOADING'
+        PAUSED = 'PAUSED'
+        COMPLETED = 'COMPLETED'
+        ERROR = 'ERROR'
+
     BT_STATES = ['queued', 'checking', 'downloading metadata', 'downloading', 'finished', 'seeding', 'allocating']
 
     id = db.Column(db.BigInteger, primary_key=True)
@@ -114,7 +125,7 @@ class Download(db.Model):
     changed_at = db.Column(db.DateTime(), onupdate=datetime.utcnow)
     downloaded_at = db.Column(db.DateTime())
     save_path = db.Column(db.String(250))
-    status = db.Column(db.Integer())
+    status = db.Column(db.Enum(STATUSES))
     bt_state = db.Column(db.String(250))
     error = db.Column(db.UnicodeText(4294000000))
 

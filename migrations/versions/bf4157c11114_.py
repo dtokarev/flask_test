@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 7c6f70660b7c
+Revision ID: bf4157c11114
 Revises: 
-Create Date: 2018-06-13 15:16:05.566711
+Create Date: 2018-07-23 13:22:49.512720
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '7c6f70660b7c'
+revision = 'bf4157c11114'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -66,7 +66,7 @@ def upgrade_():
     sa.Column('changed_at', sa.DateTime(), nullable=True),
     sa.Column('downloaded_at', sa.DateTime(), nullable=True),
     sa.Column('save_path', sa.String(length=250), nullable=True),
-    sa.Column('status', sa.Integer(), nullable=True),
+    sa.Column('status', sa.Enum('NEW', 'UPDATED', 'DOWNLOADING', 'PAUSED', 'COMPLETED', 'ERROR', name='statuses'), nullable=True),
     sa.Column('bt_state', sa.String(length=250), nullable=True),
     sa.Column('error', sa.UnicodeText(length=4294000000), nullable=True),
     sa.ForeignKeyConstraint(['search_id'], ['search.id'], ),
@@ -79,25 +79,24 @@ def upgrade_():
     sa.Column('import_source_id', sa.String(length=250), nullable=True),
     sa.Column('page_link', sa.String(length=250), nullable=True),
     sa.Column('raw_page_data', sa.UnicodeText(length=4294000000), nullable=True),
-    sa.Column('raw_page_html', sa.UnicodeText(length=4294000000), nullable=True),
     sa.Column('quality', sa.String(length=250), nullable=True),
     sa.Column('format', sa.String(length=250), nullable=True),
     sa.Column('country', sa.String(length=250), nullable=True),
     sa.Column('size', sa.String(length=250), nullable=True),
-    sa.Column('title', sa.Text(), nullable=True),
+    sa.Column('title', sa.Text(length=65535), nullable=True),
     sa.Column('title_ru', sa.String(length=250), nullable=True),
     sa.Column('title_en', sa.String(length=250), nullable=True),
     sa.Column('duration', sa.Integer(), nullable=True),
     sa.Column('translation', sa.String(length=250), nullable=True),
     sa.Column('subtitle', sa.String(length=250), nullable=True),
     sa.Column('subtitle_format', sa.String(length=250), nullable=True),
-    sa.Column('gender', sa.Text(), nullable=True),
-    sa.Column('description', sa.Text(), nullable=True),
+    sa.Column('gender', sa.Text(length=65535), nullable=True),
+    sa.Column('description', sa.Text(length=65535), nullable=True),
     sa.Column('year', sa.Integer(), nullable=True),
-    sa.Column('casting', sa.Text(), nullable=True),
-    sa.Column('video_info', sa.Text(), nullable=True),
-    sa.Column('audio_info', sa.Text(), nullable=True),
-    sa.Column('magnet_link', sa.Text(), nullable=True),
+    sa.Column('casting', sa.Text(length=65535), nullable=True),
+    sa.Column('video_info', sa.Text(length=65535), nullable=True),
+    sa.Column('audio_info', sa.Text(length=65535), nullable=True),
+    sa.Column('magnet_link', sa.Text(length=65535), nullable=True),
     sa.ForeignKeyConstraint(['search_id'], ['search.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
