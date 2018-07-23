@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Union
 from sqlalchemy.orm import validates
 
-from app_parser import db
+from app_parser import db, app
 
 
 class Config(db.Model):
@@ -14,7 +14,9 @@ class Config(db.Model):
 
     @staticmethod
     def get(key: str, vtype=str):
-        record = Config.query.filter_by(name=key).first()
+        # from flask_sqlalchemy import SQLAlchemy
+        # db = SQLAlchemy(app)
+        record = db.session.query(Config).filter_by(name=key).first()
         if vtype == bool:
             return True if record.value.lower() in ['1', 'true', 'yes'] else False
 
@@ -128,7 +130,7 @@ class Download(db.Model):
 class Resource(db.Model):
     __bind_key__ = 'db_resource'
     id = db.Column(db.BigInteger, primary_key=True)
-    type = db.Column(db.SmallInteger, index=True, nullable=False)
+    type = db.Column(db.Enum(ResourceType), index=True, nullable=False, default=ResourceType.MOVIE)
     domain = db.Column(db.String(250), nullable=False)
     uri = db.Column(db.String(250), nullable=False)
     system_path = db.Column(db.String(250), nullable=False)
