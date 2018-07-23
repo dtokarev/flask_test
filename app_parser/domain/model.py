@@ -27,7 +27,7 @@ class ResourceType(enum.Enum):
 
 
 class Search(db.Model):
-    class ParsingStatus(enum.Enum):
+    class STATUSES(enum.Enum):
         NEW = 'NEW'
         PROCESSING = 'PROCESSING'
         ERROR = 'ERROR'
@@ -42,7 +42,7 @@ class Search(db.Model):
     error = db.Column(db.UnicodeText(4294000000))
     year = db.Column(db.SmallInteger, nullable=True)
     type = db.Column(db.Enum(ResourceType), index=True, nullable=False, default=ResourceType.MOVIE)
-    status = db.Column(db.Enum(ParsingStatus), index=True, nullable=False, default=ParsingStatus.NEW)
+    status = db.Column(db.Enum(STATUSES), index=True, nullable=False, default=STATUSES.NEW)
     import_source = db.Column(db.String(250))
     import_source_id = db.Column(db.String(250))
     raw = db.Column(db.Text())
@@ -94,11 +94,6 @@ class ParsedData(db.Model):
         if value and len(value) > max_len:
             return value[:max_len]
         return value
-
-
-class DownloadStatus(enum.Enum):
-    MOVIE = 'movie'
-    SERIES = 'series'
 
 
 class Download(db.Model):
