@@ -7,11 +7,7 @@ import libtorrent as lt
 from sqlalchemy import func
 
 from app_parser import db
-from app_parser.domain.model import Download
-
-
-BT_POOL_LIMIT = 30          # num of concurrent downloads
-BT_CALM_TERM_LIMIT = 30     # terminate if bt is calm after num of times
+from app_parser.domain.model import Download, Config
 
 download_pool_ids = set()
 
@@ -23,7 +19,13 @@ ses.start_dht()
 def run():
     while True:
         time.sleep(10)
-        if len(download_pool_ids) >= BT_POOL_LIMIT:
+        if len(download_pool_ids) >= Config.get('BT_POOL_LIMIT'):
+            continue
+
+        if Config.get('BT_IS_ACTIVE'):
+            if len(download_pool_ids) == 0:
+                print('All queued downloads complete, further downloads stopped via configs')
+                exit(0)
             continue
 
         t = threading.Thread(target=run_one)
@@ -63,18 +65,19 @@ def download(d: Download):
     handle = lt.add_magnet_uri(ses, d.magnet_link, params)
     d.save_path = path
 
-    status_calm_limit = BT_CALM_TERM_LIMIT
+    status_calm_limit = Config.get('BT_CALM_TERM_LIMIT')
+    status_calm_counter = status_calm_limit
     print('downloading metadata {}'.format(d.id))
     while not handle.has_metadata():
         bt_status = handle.status()
         update_download(d, bt_status)
         time.sleep(5)
 
-        status_calm_limit -= 1
-        if status_calm_limit < 0:
-            raise Exception('torrent status not changed {} times'.format(BT_CALM_TERM_LIMIT))
+        status_calm_counter -= 1
+        if status_calm_counter < 0:
+            raise Exception('torrent status not changed {} times'.format(status_calm_limit))
 
-    status_calm_limit = BT_CALM_TERM_LIMIT
+    status_calm_counter = status_calm_limit
     print('downloading {} to {}'.format(d.id, d.save_path))
     while handle.status().state != lt.torrent_status.seeding:
         term_attr_before = d.download_rate_kb
@@ -83,9 +86,9 @@ def download(d: Download):
         update_download(d, bt_status)
         time.sleep(5)
 
-        status_calm_limit = status_calm_limit - 1 if term_attr_before == d.download_rate_kb else BT_CALM_TERM_LIMIT
-        if status_calm_limit < 0:
-            raise Exception('torrent status not changed {} times'.format(BT_CALM_TERM_LIMIT))
+        status_calm_counter = status_calm_counter - 1 if term_attr_before == d.download_rate_kb else status_calm_limit
+        if status_calm_counter < 0:
+            raise Exception('torrent status not changed {} times'.format(status_calm_limit))
 
     d.status = Download.STATUSES.index('completed')
     d.downloaded_at = datetime.utcnow()

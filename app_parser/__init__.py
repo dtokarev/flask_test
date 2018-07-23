@@ -1,23 +1,11 @@
-import os
-
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
-from app_parser.config import Config
 
-
-def create_app(test_config=None):
-    app = Flask(__name__, instance_relative_config=True)
-    app.config.from_object(Config)
-
-    if test_config is not None:
-        app.config.from_mapping(test_config)
-
-    try:
-        os.makedirs(app.instance_path)
-    except OSError:
-        pass
+def create_app():
+    app = Flask(__name__)
+    app.config.from_pyfile('config.py')
 
     return app
 
