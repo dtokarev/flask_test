@@ -14,29 +14,30 @@ download_pool_ids = set()
 
 def run():
     while True:
+        db.session.close()
         if not is_downloader_active() \
                 or not is_space_enough() \
                 or len(download_pool_ids) >= Config.get('BT_POOL_LIMIT', int):
             time.sleep(5)
             continue
 
-        t = threading.Thread(target=download, daemon=True)
+        d = get_from_queue()
+        if not d:
+            print('no item to download')
+            time.sleep(10)
+            continue
+
+        t = threading.Thread(target=download, daemon=True, args=(d,))
         t.start()
         print('new download thread started {}, pid {}'.format(t, os.getpid()))
         time.sleep(3)
 
 
-def download():
-    db.session.close()
-    d = get_from_queue()
-
-    if not d:
-        print('no item to download')
-        return
+def download(d: Download):
+    download_pool_ids.add(d.id)
+    d = Download.query.filter_by(id=d.id).first()
 
     try:
-        download_pool_ids.add(d.id)
-
         d.save_path = os.path.join(Config.get('BT_DOWNLOAD_DIR'), str(int(d.search_id / 1000)), str(d.search_id))
         torrent = Torrent(d)
         torrent.download()
@@ -45,11 +46,12 @@ def download():
         d.error = str(e)
     finally:
         db.session.commit()
+        db.session.remove()
         download_pool_ids.remove(d.id)
 
 
 def get_from_queue() -> Download:
-    min_changed_at = datetime.utcnow() # - timedelta(minutes=30)
+    min_changed_at = datetime.utcnow() - timedelta(minutes=30)
     return Download.query\
         .filter(
             Download.id.notin_(download_pool_ids) &

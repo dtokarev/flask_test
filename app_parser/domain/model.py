@@ -17,7 +17,7 @@ class Config(db.Model):
         from flask_sqlalchemy import SQLAlchemy
         db = SQLAlchemy(app)
         record = db.session.query(Config).filter_by(name=key).first()
-        db.session.close()
+        db.session.remove()
         if vtype == bool:
             return True if record.value.lower() in ['1', 'true', 'yes'] else False
 

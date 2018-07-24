@@ -62,7 +62,7 @@ class SearchPreferences:
     # source_type_list = 'BDRip', 'HDTVRip'
     # genres_list = 'боевик', 'триллер', 'приключения', 'триллер', 'фантастика', 'мелодрама'
 
-    def __init__(self, keywords: List, year: int = None, acceptable_size_range=('700 MB', '1.6 GB')):
+    def __init__(self, keywords: List, year: int = None, acceptable_size_range=('700 MB', '2.5 GB')):
         self.acceptable_size_range = acceptable_size_range
         self.min_seeders = 2
         self.keywords = keywords
