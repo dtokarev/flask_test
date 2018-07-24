@@ -42,7 +42,7 @@ def download(d: Download):
         torrent = Torrent(d)
         torrent.download()
     except Exception as e:
-        d.status = Download.STATUSES.ERROR
+        d.status = Download.Statuses.ERROR
         d.error = str(e)
     finally:
         db.session.commit()
@@ -56,8 +56,8 @@ def get_from_queue() -> Download:
         .filter(
             Download.id.notin_(download_pool_ids) &
             (
-                (Download.status.in_([Download.STATUSES.NEW, Download.STATUSES.PAUSED])) |
-                ((Download.status == Download.STATUSES.DOWNLOADING) & (Download.changed_at < min_changed_at))
+                (Download.status.in_([Download.Statuses.NEW, Download.Statuses.PAUSED])) |
+                ((Download.status == Download.Statuses.DOWNLOADING) & (Download.changed_at < min_changed_at))
             )
         )\
         .order_by(func.rand())\

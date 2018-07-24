@@ -30,7 +30,7 @@ class ResourceType(enum.Enum):
 
 
 class Search(db.Model):
-    class STATUSES(enum.Enum):
+    class Statuses(enum.Enum):
         NEW = 'NEW'
         PROCESSING = 'PROCESSING'
         ERROR = 'ERROR'
@@ -45,7 +45,7 @@ class Search(db.Model):
     error = db.Column(db.UnicodeText(4294000000))
     year = db.Column(db.SmallInteger, nullable=True)
     type = db.Column(db.Enum(ResourceType), index=True, nullable=False, default=ResourceType.MOVIE)
-    status = db.Column(db.Enum(STATUSES), index=True, nullable=False, default=STATUSES.NEW)
+    status = db.Column(db.Enum(Statuses), index=True, nullable=False, default=Statuses.NEW)
     import_source = db.Column(db.String(250))
     import_source_id = db.Column(db.String(250))
     raw = db.Column(db.Text())
@@ -100,7 +100,7 @@ class ParsedData(db.Model):
 
 
 class Download(db.Model):
-    class STATUSES(enum.Enum):
+    class Statuses(enum.Enum):
         NEW = 'NEW'
         UPDATED = 'UPDATED'                 # торрент обновился, взять новые файлы
         DOWNLOADING = 'DOWNLOADING'
@@ -123,7 +123,7 @@ class Download(db.Model):
     changed_at = db.Column(db.DateTime(), onupdate=datetime.utcnow)
     downloaded_at = db.Column(db.DateTime())
     save_path = db.Column(db.String(250))
-    status = db.Column(db.Enum(STATUSES))
+    status = db.Column(db.Enum(Statuses))
     bt_state = db.Column(db.String(250))
     error = db.Column(db.UnicodeText(4294000000))
 
@@ -143,11 +143,18 @@ class Resource(db.Model):
 
 
 class ResourceMedia(db.Model):
+    class Statuses(enum.Enum):
+        NOT_REENCODED = 'NOT_REENCODED'
+        REENCODING = 'REENCODING'
+        NOT_DEPLOYED = 'NOT_DEPLOYED'
+        READY = 'READY'
+
     __bind_key__ = 'db_resource'
     id = db.Column(db.BigInteger, primary_key=True)
     resource_id = db.Column(db.BigInteger, db.ForeignKey('resource.id'), nullable=False)
     type = db.Column(db.SmallInteger, index=True, nullable=False)
     mime = db.Column(db.String(250), nullable=False)
+    status = db.Column(db.Enum(Statuses))
     domain = db.Column(db.String(250))
     system_path = db.Column(db.String(250))
     relative_path = db.Column(db.String(250))

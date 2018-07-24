@@ -52,6 +52,6 @@ def create_download(s: Search, data: ParsedData) -> Download:
     download.magnet_link = data.magnet_link
     download.search_id = s.id
     download.progress = 0
-    download.status = Download.STATUSES.NEW
+    download.status = Download.Statuses.NEW
 
     return download

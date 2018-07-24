@@ -14,7 +14,7 @@ def run():
 def _clean_hanged_downloads():
     t = datetime.utcnow() - timedelta(minutes=10)
     downloads = Download.query\
-        .filter_by(status=Download.STATUSES.DOWNLOADING)\
+        .filter_by(status=Download.Statuses.DOWNLOADING)\
         .filter(Download.changed_at < t)\
         .all()
 
@@ -22,7 +22,7 @@ def _clean_hanged_downloads():
         return
 
     for d in downloads:
-        d.status = Download.STATUSES.NEW
+        d.status = Download.Statuses.NEW
         print('download cleaned {}'.format(d.id))
 
     db.session.commit()

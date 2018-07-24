@@ -35,7 +35,7 @@ def run():
 
 def search_and_parse(s):
     try:
-        s.status = Search.STATUSES.PROCESSING
+        s.status = Search.Statuses.PROCESSING
         db.session.commit()
 
         preferences = SearchPreferences(keywords=[s.title_ru, s.title_en], year=s.year)
@@ -44,7 +44,7 @@ def search_and_parse(s):
         _thread_sleep()
         raw_html = tracker.get_page_content(link)
 
-        s.status = Search.STATUSES.COMPLETED
+        s.status = Search.Statuses.COMPLETED
         parsed_data = create_parsed_data(s, link, raw_html)
         db.session.add(parsed_data)
         db.session.add(create_download(s, parsed_data))
@@ -54,9 +54,9 @@ def search_and_parse(s):
         s = Search.query.get(s.id)
         if isinstance(e, NonCriticalException):
             s.error = str(e)
-            s.status = Search.STATUSES.NOT_FOUND
+            s.status = Search.Statuses.NOT_FOUND
         else:
-            s.status = Search.STATUSES.ERROR
+            s.status = Search.Statuses.ERROR
             s.error = traceback.format_exc()
     finally:
         db.session.commit()
@@ -66,7 +66,7 @@ def _get_from_queue():
     while True:
         # пока только фильмы
         s = Search.query\
-            .filter_by(status=Search.STATUSES.NEW, type=ResourceType.MOVIE)\
+            .filter_by(status=Search.Statuses.NEW, type=ResourceType.MOVIE)\
             .order_by(func.rand())\
             .first()
         if len(s.title_ru) > 5:

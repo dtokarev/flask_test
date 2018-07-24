@@ -39,7 +39,7 @@ class Torrent:
         print('downloading {} to {}'.format(self.d.id, self.d.save_path))
         while self.handle.status().state != lt.torrent_status.seeding:
             term_attr_before = self.d.download_rate_kb
-            self.d.status = Download.STATUSES.DOWNLOADING
+            self.d.status = Download.Statuses.DOWNLOADING
             self.update_download(self.handle.status())
             time.sleep(5)
 
@@ -47,7 +47,7 @@ class Torrent:
             if status_calm_counter < 0:
                 raise Exception('torrent status not changed {} times'.format(status_calm_limit))
 
-        self.d.status = Download.STATUSES.COMPLETED
+        self.d.status = Download.Statuses.COMPLETED
         self.d.downloaded_at = datetime.utcnow()
         self.update_download(self.handle.status())
 
