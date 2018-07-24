@@ -66,7 +66,7 @@ def upgrade_():
     sa.Column('changed_at', sa.DateTime(), nullable=True),
     sa.Column('downloaded_at', sa.DateTime(), nullable=True),
     sa.Column('save_path', sa.String(length=250), nullable=True),
-    sa.Column('status', sa.Enum('NEW', 'UPDATED', 'DOWNLOADING', 'PAUSED', 'COMPLETED', 'ERROR', name='statuses'), nullable=True),
+    sa.Column('status', sa.Enum('NEW', 'UPDATED', 'DOWNLOADING', 'PAUSED', 'COMPLETED', 'ERROR', 'DECOMPOSED', name='statuses'), nullable=True),
     sa.Column('bt_state', sa.String(length=250), nullable=True),
     sa.Column('error', sa.UnicodeText(length=4294000000), nullable=True),
     sa.ForeignKeyConstraint(['search_id'], ['search.id'], ),

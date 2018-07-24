@@ -107,6 +107,7 @@ class Download(db.Model):
         PAUSED = 'PAUSED'
         COMPLETED = 'COMPLETED'
         ERROR = 'ERROR'
+        DECOMPOSED = 'DECOMPOSED'
 
     BT_STATES = ['queued', 'checking', 'downloading metadata', 'downloading', 'finished', 'seeding', 'allocating']
 
@@ -131,7 +132,7 @@ class Download(db.Model):
 class Resource(db.Model):
     __bind_key__ = 'db_resource'
     id = db.Column(db.BigInteger, primary_key=True)
-    type = db.Column(db.Enum(ResourceType), index=True, nullable=False, default=ResourceType.MOVIE)
+    types = db.Column(db.Enum(ResourceType), index=True, nullable=False, default=ResourceType.MOVIE)
     domain = db.Column(db.String(250), nullable=False)
     uri = db.Column(db.String(250), nullable=False)
     system_path = db.Column(db.String(250), nullable=False)
@@ -152,7 +153,7 @@ class ResourceMedia(db.Model):
     __bind_key__ = 'db_resource'
     id = db.Column(db.BigInteger, primary_key=True)
     resource_id = db.Column(db.BigInteger, db.ForeignKey('resource.id'), nullable=False)
-    type = db.Column(db.SmallInteger, index=True, nullable=False)
+    type = db.Column(db.Enum(ResourceType), index=True, nullable=False, default=ResourceType.MOVIE)
     mime = db.Column(db.String(250), nullable=False)
     status = db.Column(db.Enum(Statuses))
     domain = db.Column(db.String(250))

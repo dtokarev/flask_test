@@ -11,7 +11,7 @@ def create_app():
 
 app = create_app()
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, compare_type=app.config.get('DEBUG', False))
 
 from app_parser import route
 from app_parser.domain import model
