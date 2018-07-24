@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from app_parser.domain.model import Config, ParsedData
 from app_parser.domain.search import SearchPreferences, Matcher
 from app_parser.exception import ResultNotFoundException
-from app_parser.service.search_service import create_matcher
+from app_parser.service.parse_service import create_matcher
 from app_parser.utils.dict import get_by_list
 from app_parser.utils.unit_converter import duration_human_to_sec, size_human_to_float
 

@@ -14,9 +14,10 @@ class Config(db.Model):
 
     @staticmethod
     def get(key: str, vtype=str):
-        # from flask_sqlalchemy import SQLAlchemy
-        # db = SQLAlchemy(app)
+        from flask_sqlalchemy import SQLAlchemy
+        db = SQLAlchemy(app)
         record = db.session.query(Config).filter_by(name=key).first()
+        db.session.close()
         if vtype == bool:
             return True if record.value.lower() in ['1', 'true', 'yes'] else False
 

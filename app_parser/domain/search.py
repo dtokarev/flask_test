@@ -44,10 +44,7 @@ class Matcher:
         if not matchers:
             raise ResultNotFoundException('matcher - no result')
 
-        best = matchers[0]
-        for matcher in matchers:
-            if matcher.get_quality() > best.get_quality():
-                best = matcher
+        best = sorted(matchers, key=lambda m: m.get_quality())[-1]
 
         if best.get_quality() == 0:
             print(matchers)
@@ -67,7 +64,7 @@ class SearchPreferences:
 
     def __init__(self, keywords: List, year: int = None, acceptable_size_range=('700 MB', '1.6 GB')):
         self.acceptable_size_range = acceptable_size_range
-        self.min_seeders = 1
+        self.min_seeders = 2
         self.keywords = keywords
         self.generated_keywords = generate_keywords(*keywords, year=year)
         # self.best_size_range = '700 MB', '800 MB'

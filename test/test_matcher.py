@@ -1,8 +1,7 @@
-from nose.tools import assert_true, assert_false, assert_is
+from nose.tools import assert_true, assert_is
 
 from app_parser.domain.search import SearchPreferences, Matcher
-from app_parser.service.search_service import create_matcher
-from app_parser.utils.search import generate_keywords
+from app_parser.service.parse_service import create_matcher
 
 preferences = SearchPreferences(keywords=['The Shawshank Redemption'], year='1994')
 preferences.acceptable_size_range = '1.3 GB', '1.6 GB'
@@ -24,7 +23,7 @@ def test_matcher():
         preferences,
         {
             SearchPreferences.KEY_SIZE: '1.9 GB',
-            SearchPreferences.KEY_SEEDERS: 1,
+            SearchPreferences.KEY_SEEDERS: 2,
             SearchPreferences.KEY_KEYWORD: 'The Shawshank Redemption'
         })
     assert_true(matcher.min_seeders_matched)
@@ -51,24 +50,12 @@ def test_best_matcher():
         preferences,
         {
             SearchPreferences.KEY_SIZE: '1.4 GB',
-            SearchPreferences.KEY_SEEDERS: 10,
+            SearchPreferences.KEY_SEEDERS: 2,
             SearchPreferences.KEY_KEYWORD: 'The Shawshank Redemption'
         })
     matchers.append(matcher3)
 
-    # first with best quality
     assert_is(matcher2, Matcher.get_best(matchers))
-
-    # prepend to list
-    matcher4 = create_matcher(
-        preferences,
-        {
-            SearchPreferences.KEY_SIZE: '1.4 GB',
-            SearchPreferences.KEY_SEEDERS: 10,
-            SearchPreferences.KEY_KEYWORD: 'The Shawshank Redemption'
-        })
-    matchers = [matcher4] + matchers
-    assert_is(matcher4, Matcher.get_best(matchers))
 
     # many seeders
     matcher5 = create_matcher(

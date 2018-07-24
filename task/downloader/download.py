@@ -19,28 +19,28 @@ def run():
             time.sleep(5)
             continue
 
+        t = threading.Thread(target=download, daemon=False)
+        t.start()
+        print('new download thread started {}, pid {}'.format(t, os.getpid()))
+        exit(0)
+        time.sleep(3)
+
+
+def download():
+    try:
         d = get_from_queue()
 
         if not d:
             print('no item to download')
-            time.sleep(60)
-            continue
+            return
 
-        t = threading.Thread(target=download, args=(d,))
         download_pool_ids.add(d.id)
-        t.start()
-        print('new download thread started {}'.format(t))
-        time.sleep(1)
 
-
-def download(d: Download):
-    try:
         d.save_path = os.path.join(Config.get('BT_DOWNLOAD_DIR'), str(int(d.search_id / 1000)), str(d.search_id))
         torrent = Torrent(d)
         torrent.download()
     except Exception as e:
         d.error = str(e)
-        db.session.commit()
         d.status = Download.STATUSES.ERROR
     finally:
         db.session.commit()
