@@ -54,12 +54,24 @@ class Search(db.Model):
     parsed_data = db.relationship("ParsedData", uselist=False, backref="search")
     download = db.relationship("Download", uselist=False, backref="search")
 
-    def get_from_raw(self, key: str) -> Union[str, None]:
+    def get_from_raw(self, key: str, default = None) -> str:
         try:
             d = json.loads(self.raw)
-            return d.get(key, None)
+            return d.get(key, default)
         except ValueError:
-            return None
+            return default
+
+    @property
+    def title(self):
+        return self.title_ru if self.title_ru else self.title_en
+
+    @property
+    def season_number(self):
+        default = 0
+        if self.type == ResourceType.SERIES:
+            return self.get_from_raw('season_number', default)
+
+        return default
 
 
 class ParsedData(db.Model):
@@ -132,30 +144,84 @@ class Download(db.Model):
 class Resource(db.Model):
     __bind_key__ = 'db_resource'
     id = db.Column(db.BigInteger, primary_key=True)
-    types = db.Column(db.Enum(ResourceType), index=True, nullable=False, default=ResourceType.MOVIE)
-    domain = db.Column(db.String(250), nullable=False)
-    uri = db.Column(db.String(250), nullable=False)
+    search_id = db.Column(db.BigInteger, nullable=True)
+    type = db.Column(db.Enum(ResourceType), index=True, nullable=False, default=ResourceType.MOVIE)
     system_path = db.Column(db.String(250), nullable=False)
-    episode_no = db.Column(db.Integer())
-    episode_title = db.Column(db.UnicodeText(), nullable=False)
     season_no = db.Column(db.Integer())
     season_title = db.Column(db.UnicodeText())
+    json_meta = db.Column(db.UnicodeText(4294000000))
     resource_media = db.relationship("ResourceMedia", uselist=False, backref="resource")
+
+    @staticmethod
+    def create(params: dict):
+        r = Resource()
+        r.search_id = params.get('search_id')
+        r.type = params.get('type')
+        r.system_path = params.get('system_path')
+        r.season_title = params.get('season_title')
+        r.season_no = params.get('season_no')
+        return r
 
 
 class ResourceMedia(db.Model):
+    ext_videos = {'avi', 'mp4', 'webm', 'mkv', 'mov', 'wmv', 'mpeg'}
+    ext_audio = {'mp3'}
+    ext_subs = {'srt', 'sami'}
+
     class Statuses(enum.Enum):
-        NOT_REENCODED = 'NOT_REENCODED'
-        REENCODING = 'REENCODING'
+        NOT_ENCODED = 'NOT_ENCODED'
+        ENCODING = 'ENCODING'
         NOT_DEPLOYED = 'NOT_DEPLOYED'
         READY = 'READY'
+
+    class Types(enum.Enum):
+        VIDEO = 'VIDEO'
+        SUBTITLE = 'SUBTITLE'
+        AUDIO = 'AUDIO'
 
     __bind_key__ = 'db_resource'
     id = db.Column(db.BigInteger, primary_key=True)
     resource_id = db.Column(db.BigInteger, db.ForeignKey('resource.id'), nullable=False)
-    type = db.Column(db.Enum(ResourceType), index=True, nullable=False, default=ResourceType.MOVIE)
+    episode_no = db.Column(db.Integer())
+    episode_title = db.Column(db.UnicodeText(), nullable=False)
+    type = db.Column(db.Enum(Types), index=True, nullable=False)
     mime = db.Column(db.String(250), nullable=False)
+    extension = db.Column(db.String(250), nullable=False)
     status = db.Column(db.Enum(Statuses))
-    domain = db.Column(db.String(250))
+    url = db.Column(db.String(250), nullable=True)
     system_path = db.Column(db.String(250))
-    relative_path = db.Column(db.String(250))
+
+    @staticmethod
+    def create(r: Resource, params: dict):
+        media = ResourceMedia()
+        media.resource_id = r.id
+        media.mime = params.get('mime')
+        media.extension = params.get('extension')
+        media.system_path = params.get('path')
+        media.type = media.guess_type()
+
+        if r.type == ResourceType.MOVIE:
+            media.episode_no = 0
+            media.episode_title = r.season_title
+        else:
+            pass
+
+        if media.type == ResourceMedia.Types.VIDEO:
+            media.status = ResourceMedia.Statuses.NOT_ENCODED
+        else:
+            media.status = ResourceMedia.Statuses.NOT_DEPLOYED
+
+        return media
+
+    def guess_type(self):
+        if not self.extension or not self.mime:
+            raise Exception('fill extension and mime first, before guessing file type')
+        if 'video' in self.mime.lower() or self.extension in self.ext_videos:
+            return ResourceMedia.Types.VIDEO
+        elif self.extension in self.ext_subs:
+            return ResourceMedia.Types.SUBTITLE
+        elif 'audio' in self.mime.lower() or self.extension in self.ext_videos:
+            return ResourceMedia.Types.AUDIO
+
+    def is_junk(self):
+        return not self.guess_type()
