@@ -160,6 +160,7 @@ class Resource(db.Model):
         r.system_path = params.get('system_path')
         r.season_title = params.get('season_title')
         r.season_no = params.get('season_no')
+        r.json_meta = params.get('json_meta')
         return r
 
 
