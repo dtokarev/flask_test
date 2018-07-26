@@ -44,6 +44,7 @@ def run():
                 'mime': file_info.get('mime'),
                 'extension': file_info.get('extension'),
                 'path': file_info.get('path'),
+                'parent_folder': file_info.get('parent'),
             })
 
             if not media.is_junk():

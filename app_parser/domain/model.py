@@ -191,6 +191,7 @@ class ResourceMedia(db.Model):
     status = db.Column(db.Enum(Statuses))
     url = db.Column(db.String(250), nullable=True)
     system_path = db.Column(db.String(250))
+    parent_folder = db.Column(db.String(250))
 
     @staticmethod
     def create(r: Resource, params: dict):
@@ -200,6 +201,7 @@ class ResourceMedia(db.Model):
         media.extension = params.get('extension')
         media.system_path = params.get('path')
         media.type = media.guess_type()
+        media.parent_folder = params.get('parent_folder')
 
         if r.type == ResourceType.MOVIE:
             media.episode_no = 0
