@@ -30,7 +30,8 @@ class Matcher:
 
         if not self.acceptable_size_matched \
                 or not self.min_seeders_matched\
-                or not self.keyword_matched:
+                or not self.keyword_matched\
+                or not self.category_matched:
             return quality
 
         quality += 10                   # at least must prerequisites matched
@@ -80,7 +81,7 @@ class SearchPreferences:
         self.min_seeders = 2
         self.keywords = keywords
         self.generated_keywords = generate_keywords(*keywords, year=year)
-        self.category_names_like = ('Фильм', 'Сериал')
+        self.category_names_like = ('Фильм', 'Сериал', 'Кино', 'Видео')
         # self.best_size_range = '700 MB', '800 MB'
         # self.source_type = None
         # self.genre = None

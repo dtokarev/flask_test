@@ -25,7 +25,7 @@ def create_matcher(preferences: SearchPreferences, actual_data: dict) -> Matcher
 
     # category name
     actual_category_name = actual_data.get(SearchPreferences.KEY_CATEGORY_NAME)
-    matcher.category_matched = any(name in actual_category_name for name in preferences.category_names_like)
+    matcher.category_matched = any(name.lower() in actual_category_name.lower() for name in preferences.category_names_like)
 
     # keyword (any keyword exists in actual_title)
     actual_title = str(actual_data.get(SearchPreferences.KEY_KEYWORD))
