@@ -1,10 +1,14 @@
 import time
 
+from flask import jsonify
+
 from app_parser import app
 
+a = ['test']
 
-@app.route('/<a>/<b>')
-def test(a, b):
-    time.sleep(1)
-    return str(float(a)/float(b))
+
+@app.route('/')
+def test():
+    a.append('fsfs')
+    return jsonify(a)
 

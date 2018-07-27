@@ -148,15 +148,18 @@ class Rutracker:
         for row in result.select('tbody > tr'):
             size_tag = row.find('td', {'class': 'tor-size'})
             link_tag = row.find('a', {'class': 'tLink'})
+            category_name = row.find('a', {'class': 'gen'})
             seeders_tag = row.find('b', {'class': 'seedmed'})
             seeders = int(seeders_tag.get_text()) if seeders_tag else 0
+
             if not size_tag:
                 continue
 
             actual_data = {
                 SearchPreferences.KEY_SIZE: size_tag.get_text(),
                 SearchPreferences.KEY_SEEDERS: seeders,
-                SearchPreferences.KEY_KEYWORD: link_tag.get_text()
+                SearchPreferences.KEY_KEYWORD: link_tag.get_text(),
+                SearchPreferences.KEY_CATEGORY_NAME: category_name.get_text(),
             }
 
             # check size, format etc

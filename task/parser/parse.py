@@ -33,7 +33,7 @@ def run():
         search_and_parse(s)
 
 
-def search_and_parse(s):
+def search_and_parse(s: Search):
     try:
         s.status = Search.Statuses.PROCESSING
         db.session.commit()

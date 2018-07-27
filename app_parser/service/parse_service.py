@@ -23,6 +23,10 @@ def create_matcher(preferences: SearchPreferences, actual_data: dict) -> Matcher
         matcher.min_seeders_matched = preferences.min_seeders <= actual_seeders
         matcher.seeders_num = actual_seeders
 
+    # category name
+    actual_category_name = actual_data.get(SearchPreferences.KEY_CATEGORY_NAME)
+    matcher.category_matched = any(name in actual_category_name for name in preferences.category_names_like)
+
     # keyword (any keyword exists in actual_title)
     actual_title = str(actual_data.get(SearchPreferences.KEY_KEYWORD))
     for k in preferences.keywords:
