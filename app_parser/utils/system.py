@@ -1,5 +1,7 @@
 import os
 
+from app_parser.domain.Enum import FileTypes
+
 
 def get_disk_usage_perc():
     st = os.statvfs('/')
@@ -47,3 +49,18 @@ def get_file_info_recursive(folder):
             files_dict.append(get_file_info(path, folder))
 
     return files_dict
+
+
+def guess_type(extension, mime):
+    ext_videos = {'avi', 'mp4', 'webm', 'mkv', 'mov', 'wmv', 'mpeg'}
+    ext_audio = {'mp3'}
+    ext_subs = {'srt', 'sami'}
+
+    if 'video' in mime.lower() or extension in ext_videos:
+        return FileTypes.VIDEO
+    elif extension in ext_subs:
+        return FileTypes.SUBTITLE
+    elif 'audio' in mime.lower() or extension in ext_audio:
+        return FileTypes.AUDIO
+
+    return FileTypes.JUNK

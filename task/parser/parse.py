@@ -5,11 +5,10 @@ import traceback
 from sqlalchemy import func
 
 from app_parser import db
-from app_parser.domain.model import Search, Config, ResourceType
+from app_parser.domain.model import Search, Config, ResourceType, Download, ParsedData
 from app_parser.domain.search import SearchPreferences
 from app_parser.exception import NonCriticalException
 from app_parser.scrapper import Rutracker
-from app_parser.service.parse_service import create_parsed_data, create_download
 
 tracker = Rutracker(Config.get("RUTR_USER"), Config.get("RUTR_PASS"))
 
@@ -45,9 +44,9 @@ def search_and_parse(s: Search):
         raw_html = tracker.get_page_content(link)
 
         s.status = Search.Statuses.COMPLETED
-        parsed_data = create_parsed_data(s, link, raw_html)
+        parsed_data = ParsedData.create_from(s, link, raw_html)
         db.session.add(parsed_data)
-        db.session.add(create_download(s, parsed_data))
+        db.session.add(Download.create_from(s, parsed_data))
 
     except Exception as e:
         db.session.rollback()

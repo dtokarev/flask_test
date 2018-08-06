@@ -66,7 +66,7 @@ def test_rutr_parsed_data():
     assert_equal(parsed_data.translation, 'Субтитры')
     assert_equal(parsed_data.subtitle, 'русские (softsub, ASS), иврит (hardsub)')
     assert_equal(parsed_data.subtitle_format, 'softsub (ASS)')
-    assert_equal(parsed_data.gender, 'драма')
+    assert_equal(parsed_data.genre, 'драма')
 
     # 2 little difference in styles
     html = read_from_file(os.path.join('data', 'rutr_tdp_2.html'))
@@ -78,7 +78,7 @@ def test_rutr_parsed_data():
     assert_equal(parsed_data.format, 'AVI')
     assert_equal(parsed_data.duration, 6220)
     assert_equal(parsed_data.translation, 'Любительский (многоголосый закадровый)')
-    assert_equal(parsed_data.gender, 'романтика, комедия, мелодрама')
+    assert_equal(parsed_data.genre, 'романтика, комедия, мелодрама')
 
     # 3 little difference in styles
     html = read_from_file(os.path.join('data', 'rutr_tdp_3.html'))
@@ -90,7 +90,7 @@ def test_rutr_parsed_data():
     assert_equal(parsed_data.format, 'AVI')
     assert_equal(parsed_data.duration, 7282)
     assert_equal(parsed_data.translation, 'Профессиональный (полное дублирование) BD EUR |Лицензия')
-    assert_equal(parsed_data.gender, 'боевик, драма, комедия')
+    assert_equal(parsed_data.genre, 'боевик, драма, комедия')
 
 
 def test_get_page_link_from_search_result():

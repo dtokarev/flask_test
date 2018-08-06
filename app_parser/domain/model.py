@@ -1,10 +1,10 @@
 import json
 import enum
 from datetime import datetime
-from typing import Union
 from sqlalchemy.orm import validates
 
 from app_parser import db, app
+from app_parser.domain.Enum import FileTypes, ResourceType
 
 
 class Config(db.Model):
@@ -22,11 +22,6 @@ class Config(db.Model):
             return True if record.value.lower() in ['1', 'true', 'yes'] else False
 
         return vtype(record.value) if record else None
-
-
-class ResourceType(enum.Enum):
-    MOVIE = 'MOVIE'
-    SERIES = 'SERIES'
 
 
 class Search(db.Model):
@@ -53,6 +48,19 @@ class Search(db.Model):
 
     parsed_data = db.relationship("ParsedData", uselist=False, backref="search")
     download = db.relationship("Download", uselist=False, backref="search")
+
+    @staticmethod
+    def create(movie: dict, source_name: str, r_type: ResourceType) -> 'Search':
+        s = Search()
+        s.title_ru = movie.get('title_ru')
+        s.title_en = movie.get('title_en')
+        s.kinopoisk_id = movie.get('kinopoisk_id')
+        s.import_source = source_name
+        s.import_source_id = movie.get('token')
+        s.year = movie.get('year')
+        s.type = r_type
+        s.raw = json.dumps(movie, ensure_ascii=False)
+        return s
 
     def get_from_raw(self, key: str, default = None) -> str:
         try:
@@ -94,7 +102,7 @@ class ParsedData(db.Model):
     translation = db.Column(db.String(250))
     subtitle = db.Column(db.String(250))
     subtitle_format = db.Column(db.String(250))
-    gender = db.Column(db.Text(65535))
+    genre = db.Column(db.Text(65535))
     description = db.Column(db.Text(65535))
     year = db.Column(db.Integer())
     casting = db.Column(db.Text(65535))
@@ -109,6 +117,20 @@ class ParsedData(db.Model):
         if value and len(value) > max_len:
             return value[:max_len]
         return value
+
+    @staticmethod
+    def create_from(s: Search, link, raw_html) -> 'ParsedData':
+        from app_parser.scrapper import Rutracker
+        parsed_data = Rutracker.parse_html(raw_html)
+        parsed_data.page_link = link
+        parsed_data.search_id = s.id
+        parsed_data.kinopoisk_id = s.kinopoisk_id
+        parsed_data.title_en = s.title_en
+        parsed_data.title_ru = s.title_ru
+        parsed_data.import_source_id = s.import_source_id
+        parsed_data.year = s.year
+
+        return parsed_data
 
 
 class Download(db.Model):
@@ -125,7 +147,6 @@ class Download(db.Model):
 
     id = db.Column(db.BigInteger, primary_key=True)
     search_id = db.Column(db.BigInteger, db.ForeignKey('search.id'), nullable=False)
-    # type = db.Column(db.Integer, nullable=False)
     progress = db.Column(db.Float(), default=0)
     download_rate_kb = db.Column(db.Float())
     upload_rate_kb = db.Column(db.Float())
@@ -139,35 +160,22 @@ class Download(db.Model):
     status = db.Column(db.Enum(Statuses))
     bt_state = db.Column(db.String(250))
     error = db.Column(db.UnicodeText(4294000000))
-
-
-class Resource(db.Model):
-    __bind_key__ = 'db_resource'
-    id = db.Column(db.BigInteger, primary_key=True)
-    search_id = db.Column(db.BigInteger, nullable=True)
     type = db.Column(db.Enum(ResourceType), index=True, nullable=False, default=ResourceType.MOVIE)
-    system_path = db.Column(db.String(250), nullable=False)
-    season_no = db.Column(db.Integer())
-    season_title = db.Column(db.UnicodeText())
-    json_meta = db.Column(db.UnicodeText(4294000000))
-    resource_media = db.relationship("ResourceMedia", uselist=False, backref="resource")
 
     @staticmethod
-    def create(params: dict):
-        r = Resource()
-        r.search_id = params.get('search_id')
-        r.type = params.get('type')
-        r.system_path = params.get('system_path')
-        r.season_title = params.get('season_title')
-        r.season_no = params.get('season_no')
-        r.json_meta = params.get('json_meta')
-        return r
+    def create_from(s: Search, data: ParsedData) -> 'Download':
+        download = Download()
+        download.magnet_link = data.magnet_link
+        download.search_id = s.id
+        download.progress = 0
+        download.status = Download.Statuses.NEW
+        download.type = s.type
+
+        return download
 
 
-class ResourceMedia(db.Model):
-    ext_videos = {'avi', 'mp4', 'webm', 'mkv', 'mov', 'wmv', 'mpeg'}
-    ext_audio = {'mp3'}
-    ext_subs = {'srt', 'sami'}
+class Episode(db.Model):
+    __bind_key__ = 'db_resource'
 
     class Statuses(enum.Enum):
         NOT_ENCODED = 'NOT_ENCODED'
@@ -175,56 +183,53 @@ class ResourceMedia(db.Model):
         NOT_DEPLOYED = 'NOT_DEPLOYED'
         READY = 'READY'
 
-    class Types(enum.Enum):
-        VIDEO = 'VIDEO'
-        SUBTITLE = 'SUBTITLE'
-        AUDIO = 'AUDIO'
-
-    __bind_key__ = 'db_resource'
-    id = db.Column(db.BigInteger, primary_key=True)
-    resource_id = db.Column(db.BigInteger, db.ForeignKey('resource.id'), nullable=False)
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     episode_no = db.Column(db.Integer())
     episode_title = db.Column(db.UnicodeText(), nullable=False)
-    type = db.Column(db.Enum(Types), index=True, nullable=False)
+    # season_no = db.Column(db.Integer())
+    # season_title = db.Column(db.UnicodeText())
+    search_id = db.Column(db.BigInteger())
+    kinopoisk_id = db.Column(db.String(250))
+    translation = db.Column(db.Text(65535))
+    description = db.Column(db.Text(65535))
+    year = db.Column(db.Integer())
+    duration = db.Column(db.Integer())
+    genre = db.Column(db.Text(65535))
+    country = db.Column(db.Text())
+
+    status = db.Column(db.Enum(Statuses))
+    type = db.Column(db.Enum(ResourceType), index=True, nullable=False, default=ResourceType.MOVIE)
     mime = db.Column(db.String(250), nullable=False)
     extension = db.Column(db.String(250), nullable=False)
-    status = db.Column(db.Enum(Statuses))
     url = db.Column(db.String(250), nullable=True)
     system_path = db.Column(db.String(250))
     parent_folder = db.Column(db.String(250))
 
     @staticmethod
-    def create(r: Resource, params: dict):
-        media = ResourceMedia()
-        media.resource_id = r.id
+    def create(params: dict):
+        media = Episode()
+        media.status = Episode.Statuses.NOT_ENCODED
+        media.type = params.get('type')
+        media.search_id = params.get('search_id')
+
         media.mime = params.get('mime')
         media.extension = params.get('extension')
-        media.system_path = params.get('path')
-        media.type = media.guess_type()
+        media.system_path = params.get('system_path')
         media.parent_folder = params.get('parent_folder')
 
-        if r.type == ResourceType.MOVIE:
-            media.episode_no = 0
-            media.episode_title = r.season_title
-        else:
-            pass
-
-        if media.type == ResourceMedia.Types.VIDEO:
-            media.status = ResourceMedia.Statuses.NOT_ENCODED
-        else:
-            media.status = ResourceMedia.Statuses.NOT_DEPLOYED
+        media.kinopoisk_id = params.get('kinopoisk_id')
+        media.episode_title = params.get('episode_title')
+        media.year = params.get('year')
+        media.episode_no = params.get('episode_no') if media.type is ResourceType.SERIES else None
+        media.genre = params.get('genre')
+        media.country = params.get('country')
+        media.description = params.get('description')
+        media.duration = params.get('duration')
+        media.translation = params.get('translation')
 
         return media
 
-    def guess_type(self):
-        if not self.extension or not self.mime:
-            raise Exception('fill extension and mime first, before guessing file type')
-        if 'video' in self.mime.lower() or self.extension in self.ext_videos:
-            return ResourceMedia.Types.VIDEO
-        elif self.extension in self.ext_subs:
-            return ResourceMedia.Types.SUBTITLE
-        elif 'audio' in self.mime.lower() or self.extension in self.ext_videos:
-            return ResourceMedia.Types.AUDIO
 
-    def is_junk(self):
-        return not self.guess_type()
+# class EpisodeResource():
+#     pass
+#     # file_type = db.Column(db.Enum(FileTypes), index=True, nullable=False)

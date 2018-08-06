@@ -130,7 +130,7 @@ class Rutracker:
         data.translation = raw_data.get('Перевод')
         data.subtitle = raw_data.get('Субтитры')
         data.subtitle_format = raw_data.get('Формат субтитров')
-        data.gender = raw_data.get('Жанр')
+        data.genre = raw_data.get('Жанр')
         data.description = get_by_list(raw_data, ['Описание', 'О фильме'])
         data.quality = get_by_list(raw_data, ['Качество видео', 'Качество'])
         data.casting = raw_data.get('В ролях')

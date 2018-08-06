@@ -28,7 +28,7 @@ def run():
         existing_ids = set(int(s.kinopoisk_id) for s in db.session.query(Search.kinopoisk_id).all())
 
         for movie in data.get('report', {}).get(json_key, []):
-            s = search_service.create_from_mw(movie, source_name, resource_type)
+            s = Search.create(movie, source_name, resource_type)
 
             if not s.kinopoisk_id or s.kinopoisk_id in existing_ids or s.kinopoisk_id < 1:
                 continue
