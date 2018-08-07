@@ -27,7 +27,7 @@ def run():
             time.sleep(10)
             continue
 
-        t = threading.Thread(target=download, daemon=True, args=(d,))
+        t = threading.Thread(target=download, daemon=True, args=(d,), name='thread_download_id_{}'.format(d.id))
         t.start()
         print('new download thread started {}, pid {}'.format(t, os.getpid()))
         time.sleep(3)
@@ -46,7 +46,6 @@ def download(d: Download):
         d.error = str(e)
     finally:
         db.session.commit()
-        db.session.remove()
         download_pool_ids.remove(d.id)
 
 

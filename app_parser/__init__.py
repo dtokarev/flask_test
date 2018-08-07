@@ -3,6 +3,14 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
 
+class CustomAlchemy(SQLAlchemy):
+    def apply_driver_hacks(self, app, info, options):
+        if "isolation_level" not in options:
+            options["isolation_level"] = "READ COMMITTED"
+
+        return super(CustomAlchemy, self).apply_driver_hacks(app, info, options)
+
+
 def create_app():
     app = Flask(__name__)
     app.config.from_pyfile('config.py')
@@ -10,7 +18,7 @@ def create_app():
     return app
 
 app = create_app()
-db = SQLAlchemy(app)
+db = CustomAlchemy(app)
 migrate = Migrate(app, db, compare_type=app.config.get('DEBUG', False))
 
 from app_parser import route
