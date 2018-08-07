@@ -1,6 +1,6 @@
 from time import sleep
 
-from app_parser import db
+from app_parser import db, app
 from app_parser.domain.Enum import FileTypes, ResourceType
 from app_parser.domain.model import Download, Episode
 from app_parser.utils.system import get_file_info_recursive, guess_type
@@ -10,11 +10,11 @@ def run():
     while True:
         d = get_from_queue()
         if not d:
-            print('no completed downloads')
+            app.logger.warn('no completed downloads')
             sleep(20)
             continue
 
-        print('decomposing', d.id)
+        app.logger.info('decomposing', d.id)
         search = d.search
         parsed = search.parsed_data
 

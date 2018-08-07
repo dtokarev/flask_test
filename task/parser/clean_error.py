@@ -1,4 +1,4 @@
-from app_parser import db
+from app_parser import db, app
 from app_parser.domain.model import Search
 
 
@@ -16,7 +16,7 @@ def _clean_hanged_downloads():
 
     for search in searches:
         search.status = Search.Statuses.NEW
-        print('search {} status returned to NEW '.format(search.id))
+        app.logger.warn('search {} status returned to NEW '.format(search.id))
 
     db.session.commit()
 

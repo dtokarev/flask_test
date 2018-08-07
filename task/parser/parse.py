@@ -4,7 +4,7 @@ import traceback
 
 from sqlalchemy import func
 
-from app_parser import db
+from app_parser import db, app
 from app_parser.domain.model import Search, Config, ResourceType, Download, ParsedData
 from app_parser.domain.search import SearchPreferences
 from app_parser.exception import NonCriticalException
@@ -24,7 +24,7 @@ def run():
         s = _get_from_queue()
 
         if not s:
-            print('no item to search')
+            app.logger.warn('no item to search')
             time.sleep(60)
             return
 
@@ -79,7 +79,7 @@ def _thread_sleep(lo: int =1, hi: int = 10):
 def _is_parser_active():
     is_active = Config.get('PARSER_IS_ACTIVE', bool)
     if not is_active:
-        print('Parser stopped via configs')
+        app.logger.warn('Parser stopped via configs')
 
     return is_active
 

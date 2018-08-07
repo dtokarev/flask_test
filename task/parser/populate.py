@@ -1,9 +1,8 @@
 import json
 import requests
 
-from app_parser import db
+from app_parser import db, app
 from app_parser.domain.model import Search, Config, ResourceType
-from app_parser.service import search_service
 
 
 def run():
@@ -37,7 +36,7 @@ def run():
 
             db.session.add(s)
 
-        print('adding new {} {}'.format(source_name, len(db.session.new)))
+        app.logger.warn('adding new {} {}'.format(source_name, len(db.session.new)))
         db.session.commit()
 
 

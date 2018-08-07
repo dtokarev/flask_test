@@ -2,6 +2,8 @@ from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
+from app_parser.logger import config_logger
+
 
 class CustomAlchemy(SQLAlchemy):
     def apply_driver_hacks(self, app, info, options):
@@ -12,12 +14,13 @@ class CustomAlchemy(SQLAlchemy):
 
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, instance_relative_config=True)
     app.config.from_pyfile('config.py')
 
     return app
 
 app = create_app()
+config_logger(app)
 db = CustomAlchemy(app)
 migrate = Migrate(app, db, compare_type=app.config.get('DEBUG', False))
 

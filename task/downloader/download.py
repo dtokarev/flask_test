@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import func
 
+from app_parser import app
 from app_parser import db
 from app_parser.domain.model import Download, Config
 from app_parser.service.torrent_service import Torrent
@@ -23,13 +24,13 @@ def run():
 
         d = get_from_queue()
         if not d:
-            print('no item to download')
+            app.logger.warn('no item to download')
             time.sleep(10)
             continue
 
         t = threading.Thread(target=download, daemon=True, args=(d,), name='thread_download_id_{}'.format(d.id))
         t.start()
-        print('new download thread started {}, pid {}'.format(t, os.getpid()))
+        app.logger.info('new download thread started {}, pid {}'.format(t, os.getpid()))
         time.sleep(3)
 
 
@@ -66,7 +67,7 @@ def get_from_queue() -> Download:
 def is_downloader_active():
     is_active = Config.get('BT_IS_ACTIVE', bool)
     if not is_active:
-        print('Further downloads stopped via configs, downloads in queue {}'.format(len(download_pool_ids)))
+        app.logger.warn('Further downloads stopped via configs, downloads in queue {}'.format(len(download_pool_ids)))
 
     return is_active
 
@@ -74,10 +75,12 @@ def is_downloader_active():
 def is_space_enough():
     from app_parser.utils.system import get_disk_usage_perc
     max = Config.get('BT_USE_DISK_SPACE_PERC', float)
-    is_enough = get_disk_usage_perc() < max
+    current = get_disk_usage_perc()
+    is_enough = current < max
 
     if not is_enough:
-        print('Further downloads stopped disk space limit of {}% reached, downloads in queue {}'.format(max, len(download_pool_ids)))
+        app.logger.warn('Further downloads stopped disk space limit reached (limit={}%, used={}%), '
+                        'downloads in queue {}'.format(max, current, len(download_pool_ids)))
 
     return is_enough
 

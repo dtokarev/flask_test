@@ -1,7 +1,7 @@
 import time
 from datetime import datetime, timedelta
 
-from app_parser import db
+from app_parser import db, app
 from app_parser.domain.model import Download
 
 
@@ -23,7 +23,7 @@ def _clean_hanged_downloads():
 
     for d in downloads:
         d.status = Download.Statuses.NEW
-        print('download cleaned {}'.format(d.id))
+        app.logger.warn('download cleaned {}'.format(d.id))
 
     db.session.commit()
 
