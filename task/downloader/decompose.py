@@ -14,7 +14,7 @@ def run():
             sleep(20)
             continue
 
-        app.logger.info('decomposing', d.id)
+        app.logger.info('decomposing download.id={}'.format(d.id))
         search = d.search
         parsed = search.parsed_data
 
