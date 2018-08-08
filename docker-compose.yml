@@ -7,6 +7,6 @@ services:
     environment:
       - MODE=dev
     volumes:
-      - .:/app_parser
+      - .:/app
     ports:
       - "8000:8000"
