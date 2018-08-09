@@ -37,4 +37,4 @@
       template: src=../files/supervisor.conf dest="{{project_instance_path}}" mode=0644
   handlers:
     - name: run migrations
-      shell: "cd {{env_path}}/bin && {{env_path}}/bin/flask db upgrade"
+      shell: "cd {{project_path}} && {{env_path}}/bin/flask db upgrade"
