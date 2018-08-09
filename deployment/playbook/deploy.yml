@@ -7,7 +7,6 @@
     env_path: "{{project_path}}/.env"
     python: "{{env_path}}/bin/python"
   environment:
-    PATH: "{{env_path}/bin:$PATH"
     FLASK_APP: "{{project_path}}/app.py"
     FLASK_DEBUG: 0
   tasks:
@@ -34,6 +33,8 @@
         requirements: "{{project_path}}/requirements.txt"
         virtualenv: "{{env_path}}"
         virtualenv_python: python3
+    - name: activate venv
+      shell: ". {{env_path}}/bin/activate"
     - name: copy supervisor conf
       template: src=../files/supervisor.conf dest="{{project_instance_path}}" mode=0644
   handlers:
