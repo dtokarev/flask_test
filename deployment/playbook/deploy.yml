@@ -33,10 +33,8 @@
         requirements: "{{project_path}}/requirements.txt"
         virtualenv: "{{env_path}}"
         virtualenv_python: python3
-    - name: activate venv
-      shell: ". {{env_path}}/bin/activate"
     - name: copy supervisor conf
       template: src=../files/supervisor.conf dest="{{project_instance_path}}" mode=0644
   handlers:
     - name: run migrations
-      shell: "cd {{project_path}} && flask db upgrade"
+      shell: "cd {{project_path}} && {{python}} flask db upgrade"
