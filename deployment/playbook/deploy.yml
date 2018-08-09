@@ -1,12 +1,13 @@
 ---
 - name: Deployment
-  hosts: prod
+  hosts: test_servers
   vars:
     project_path: "/var/www/{{app_name}}"
+    project_instance_path: "{{project_path}}/instance"
     env_path: "{{project_path}}/.env"
   environment:
     FLASK_APP: "{{project_path}}/app.py"
-    FLASK_DEBUG: 1
+    FLASK_DEBUG: 0
   tasks:
     - name: update repo
       git:
@@ -19,7 +20,7 @@
     - name: init folders
       file:
         path:
-          - "{{project_path}}/instance"
+          - "{{project_instance_path}}"
         state: directory
         mode: 0755
     - name: copy application configs
@@ -31,6 +32,8 @@
         requirements: "{{project_path}}/requirements.txt"
         virtualenv: "{{env_path}}"
         virtualenv_python: python3
+    - name: copy supervisor conf
+      template: src=../files/supervisor.conf dest="{{project_instance_path}}" mode=0644
   handlers:
     - name: run migrations
       shell: flask db upgrade
