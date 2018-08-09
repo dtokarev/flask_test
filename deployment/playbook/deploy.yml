@@ -7,7 +7,7 @@
     env_path: "{{project_path}}/.env"
     python: "{{env_path}}/bin/python"
   environment:
-    PATH: {{env_path}/bin:$PATH
+    PATH: "{{env_path}/bin:$PATH"
     FLASK_APP: "{{project_path}}/app.py"
     FLASK_DEBUG: 0
   tasks:
