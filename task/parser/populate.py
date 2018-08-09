@@ -1,43 +1,50 @@
 import json
 import requests
+import time
 
 from app_parser import db, app
 from app_parser.domain.model import Search, Config, ResourceType
 
 
 def run():
-    sources = {
-        'movies_foreign': Config.get('FOREIGN_MOVIE_SOURCE'),
-        'movies_russian': Config.get('RUSSIAN_MOVIE_SOURCE'),
-        'series_foreign': Config.get('FOREIGN_SERIES_SOURCE'),
-        'series_russian': Config.get('RUSSIAN_SERIES_SOURCE')
-    }
+    existing_ids = set(int(s.kinopoisk_id) for s in db.session.query(Search.kinopoisk_id).all())
 
-    for source_name, source_url in sources.items():
-        if source_name.startswith('series'):
-            resource_type = ResourceType.SERIES
-            json_key = 'serials'
-        else:
-            resource_type = ResourceType.MOVIE
-            json_key = 'movies'
+    while True:
+        sources = {
+            'movies_foreign': Config.get('FOREIGN_MOVIE_SOURCE'),
+            'movies_russian': Config.get('RUSSIAN_MOVIE_SOURCE'),
+            'series_foreign': Config.get('FOREIGN_SERIES_SOURCE'),
+            'series_russian': Config.get('RUSSIAN_SERIES_SOURCE')
+        }
 
-        response = requests.get(source_url).text
+        for source_name, source_url in sources.items():
+            if source_name.startswith('series'):
+                resource_type = ResourceType.SERIES
+                json_key = 'serials'
+            else:
+                resource_type = ResourceType.MOVIE
+                json_key = 'movies'
 
-        data = json.loads(response)
-        existing_ids = set(int(s.kinopoisk_id) for s in db.session.query(Search.kinopoisk_id).all())
+            response = requests.get(source_url).text
 
-        for movie in data.get('report', {}).get(json_key, []):
-            s = Search.create(movie, source_name, resource_type)
+            data = json.loads(response)
 
-            if not s.kinopoisk_id or s.kinopoisk_id in existing_ids or s.kinopoisk_id < 1:
-                continue
+            for movie in data.get('report', {}).get(json_key, []):
+                s = Search.create(movie, source_name, resource_type)
 
-            existing_ids.add(s.kinopoisk_id)
+                if not s.kinopoisk_id or s.kinopoisk_id in existing_ids or s.kinopoisk_id < 1:
+                    continue
 
-            db.session.add(s)
+                existing_ids.add(s.kinopoisk_id)
 
-        app.logger.warn('adding new {} {}'.format(source_name, len(db.session.new)))
-        db.session.commit()
+                db.session.add(s)
+
+            app.logger.warn('adding new {} {}'.format(source_name, len(db.session.new)))
+            db.session.commit()
+
+        sleep_for = 3600
+        app.logger.warn('sleep for {}'.format(sleep_for))
+        time.sleep(sleep_for)
 
 
 run()

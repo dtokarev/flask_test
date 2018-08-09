@@ -1,0 +1,36 @@
+---
+- name: Deployment
+  hosts: prod
+  vars:
+    project_path: "/var/www/{{app_name}}"
+    env_path: "{{project_path}}/.env"
+  environment:
+    FLASK_APP: "{{project_path}}/app.py"
+    FLASK_DEBUG: 1
+  tasks:
+    - name: update repo
+      git:
+        repo: https://github.com/taverok/bt_parser.git
+        dest: "{{project_path}}"
+        version: master
+        update: yes
+      notify:
+        - run migrations
+    - name: init folders
+      file:
+        path:
+          - "{{project_path}}/instance"
+        state: directory
+        mode: 0755
+    - name: copy application configs
+      copy:
+        src=../files/instance/config.py
+        dest="{{project_path}}/instance/config.py"
+    - name: run pip install
+      pip:
+        requirements: "{{project_path}}/requirements.txt"
+        virtualenv: "{{env_path}}"
+        virtualenv_python: python3
+  handlers:
+    - name: run migrations
+      shell: flask db upgrade

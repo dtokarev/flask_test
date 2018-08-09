@@ -1,0 +1,32 @@
+---
+
+- name: Server setup
+  hosts: test_servers
+  become: True
+  tasks:
+    - name: install packages
+      apt: name={{item}} state=installed update_cache=yes
+      with_items:
+        - gcc
+        - libmysqlclient-dev  # or default-libmysqlclient-dev
+        - python3-libtorrent
+        - python3-pip
+        - supervisor
+    - name: init folders
+      file:
+        path:
+          - "/var/log/project_log/"
+        state: directory
+        mode: 0777
+
+#    - name: forward ports
+#      iptables:
+#        table: nat
+#        chain: PREROUTING
+#        in_interface: eth0
+#        protocol: tcp
+#        match: tcp
+#        destination_port: 80
+#        jump: REDIRECT
+#        to_ports: 8000
+#        comment: Redirect web traffic to port 8000
