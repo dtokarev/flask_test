@@ -3,10 +3,10 @@ from app_parser.domain.model import Search
 
 
 def run():
-    _clean_hanged_downloads()
+    clean_hanged_downloads()
 
 
-def _clean_hanged_downloads():
+def clean_hanged_downloads():
     searches = Search.query\
         .filter_by(status=Search.Statuses.ERROR)\
         .all()

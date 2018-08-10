@@ -55,9 +55,6 @@ class Rutracker:
         bs = BeautifulSoup(response.content, "html.parser")
         return bool(bs.find('a', {'href': '#pms-menu'}))
 
-    # def solve_captcha(self):
-    #     pass
-
     def get_page_link(self, preferences: SearchPreferences) -> Union[str, None]:
         for key in preferences.generated_keywords:
             content = self.get_search_result_page(key)
@@ -73,7 +70,6 @@ class Rutracker:
             'nm': key,
             'prev_new': 0,
             'prev_oop': 0,
-            # 'f[]': [7, 22],      # Category filter
             'o': 10,  # Sort by seeds number
             's': 2,
             'pn': None,
@@ -140,7 +136,7 @@ class Rutracker:
         return data
 
     @staticmethod
-    def get_page_link_from_search_result(html: str, preferences: SearchPreferences) -> Union[str, None]:
+    def get_page_link_from_search_result(html: Union[str, bytes], preferences: SearchPreferences) -> Union[str, None]:
         bs = BeautifulSoup(html, "html.parser")
         result = bs.find('table', {'id': 'tor-tbl'})
 

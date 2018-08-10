@@ -1,6 +1,6 @@
 ---
 - name: Deployment
-  hosts: test_servers
+  hosts: staging
   vars:
     project_path: "/var/www/{{app_name}}"
     project_instance_path: "{{project_path}}/instance"
@@ -25,7 +25,7 @@
         state: directory
         mode: 0755
     - name: copy application configs
-      copy:
+      template:
         src=../files/instance/config.py
         dest="{{project_path}}/instance/config.py"
     - name: run pip install

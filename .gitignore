@@ -22,8 +22,11 @@ local_settings.py
 db.sqlite3
 
 # Flask stuff:
-instance/
+/instance/
 .webassets-cache
+
+#Ansible
+group_vars/production
 
 # Environments
 .env

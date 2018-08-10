@@ -1,7 +1,7 @@
 ---
 
 - name: Server setup
-  hosts: test_servers
+  hosts: staging
   become: True
   tasks:
     - name: install packages
