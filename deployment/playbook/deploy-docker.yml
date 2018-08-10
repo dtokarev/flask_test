@@ -1,6 +1,6 @@
 ---
 - name: Deployment
-  hosts: staging
+  hosts: production
   vars:
     project_path: "/var/www/{{app_name}}"
     project_instance_path: "{{project_path}}/instance"
@@ -9,7 +9,7 @@
   tasks:
     - name: update repo
       git:
-        repo: https://github.com/taverok/bt_parser.git
+        repo: https://f3l1s@bitbucket.org/8bitgroup/bt-lostplanet.git
         dest: "{{project_path}}"
         version: master
         update: yes
@@ -24,11 +24,11 @@
     - name: copy instance files
       template:
         src=../files/instance/{{item}}
-        dest="{{project_path}}/instance/config.py"
+        dest="{{project_path}}/instance/{{item}}"
         mode=0755
-        with_items:
-          - config.py
-          - supervisor.conf
+      with_items:
+        - config.py
+        - supervisor.conf
 #  handlers:
 #    - name: run migrations
 #      shell: "cd {{project_path}} && {{env_path}}/bin/flask db upgrade"

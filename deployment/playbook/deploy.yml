@@ -12,7 +12,7 @@
   tasks:
     - name: update repo
       git:
-        repo: https://github.com/taverok/bt_parser.git
+        repo: https://f3l1s@bitbucket.org/8bitgroup/bt-lostplanet.git
         dest: "{{project_path}}"
         version: master
         update: yes
@@ -34,7 +34,7 @@
         virtualenv: "{{env_path}}"
         virtualenv_python: python3
     - name: copy supervisor conf
-      template: src=../files/instance/supervisor.conf dest="{{project_instance_path}}" mode=0644
+      template: src=../files/inssupervisor.conf dest="{{project_instance_path}}" mode=0644
   handlers:
     - name: run migrations
       shell: "cd {{project_path}} && {{env_path}}/bin/flask db upgrade"
