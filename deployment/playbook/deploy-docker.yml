@@ -1,0 +1,34 @@
+---
+- name: Deployment
+  hosts: staging
+  vars:
+    project_path: "/var/www/{{app_name}}"
+    project_instance_path: "{{project_path}}/instance"
+    env_path: "{{project_path}}/.env"
+    python: "{{env_path}}/bin/python"
+  tasks:
+    - name: update repo
+      git:
+        repo: https://github.com/taverok/bt_parser.git
+        dest: "{{project_path}}"
+        version: master
+        update: yes
+#      notify:
+#        - run migrations
+    - name: init folders
+      file:
+        path:
+          - "{{project_instance_path}}"
+        state: directory
+        mode: 0777
+    - name: copy instance files
+      template:
+        src=../files/instance/{{item}}
+        dest="{{project_path}}/instance/config.py"
+        mode=0755
+        with_items:
+          - config.py
+          - supervisor.conf
+#  handlers:
+#    - name: run migrations
+#      shell: "cd {{project_path}} && {{env_path}}/bin/flask db upgrade"

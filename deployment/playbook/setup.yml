@@ -8,6 +8,7 @@
       apt: name={{item}} state=installed update_cache=yes
       with_items:
         - gcc
+        - docker
         - libmysqlclient-dev  # or default-libmysqlclient-dev
         - python3-libtorrent
         - python3-pip
