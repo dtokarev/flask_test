@@ -7,24 +7,25 @@
     env_path: "{{project_path}}/.env"
     python: "{{env_path}}/bin/python"
   tasks:
-    - name: update repo
-      git:
-        repo: https://f3l1s@bitbucket.org/8bitgroup/bt-lostplanet.git
-        dest: "{{project_path}}"
-        version: master
-        update: yes
+#    - name: update repo
+#      git:
+#        repo: https://f3l1s@bitbucket.org/8bitgroup/bt-lostplanet.git
+#        dest: "{{project_path}}"
+#        version: master
+#        accept_hostkey: True
+#        update: True
 #      notify:
 #        - run migrations
     - name: init folders
       file:
-        path:
-          - "{{project_instance_path}}"
-        state: directory
-        mode: 0777
+        path="{{project_instance_path}}"
+        state=directory
+        mode=0777
     - name: copy instance files
       template:
         src=../files/instance/{{item}}
-        dest="{{project_path}}/instance/{{item}}"
+        dest="{{project_instance_path}}/{{item}}"
+        force=True
         mode=0755
       with_items:
         - config.py
