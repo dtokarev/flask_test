@@ -14,8 +14,6 @@
         version: master
         accept_hostkey: True
         update: True
-      notify:
-        - run migrations
     - name: init folders
       file:
         path="{{project_instance_path}}"
