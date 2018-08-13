@@ -48,7 +48,7 @@ def upgrade_():
     sa.Column('status', sa.Enum('NEW', 'PROCESSING', 'ERROR', 'NOT_FOUND', 'COMPLETED', 'SEND', name='statuses'), nullable=False),
     sa.Column('import_source', sa.String(length=250), nullable=True),
     sa.Column('import_source_id', sa.String(length=250), nullable=True),
-    sa.Column('raw', sa.Text(), nullable=True),
+    sa.Column('raw', sa.UnicodeText(length=4294000000), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('kinopoisk_id'),

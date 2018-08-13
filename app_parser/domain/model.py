@@ -40,7 +40,7 @@ class Search(db.Model):
     status = db.Column(db.Enum(Statuses), index=True, nullable=False, default=Statuses.NEW)
     import_source = db.Column(db.String(250))
     import_source_id = db.Column(db.String(250))
-    raw = db.Column(db.Text())
+    raw = db.Column(db.UnicodeText(4294000000))
     created_at = db.Column(db.DateTime(), default=datetime.utcnow, nullable=False)
 
     parsed_data = db.relationship("ParsedData", uselist=False, backref="search")
