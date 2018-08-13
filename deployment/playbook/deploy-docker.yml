@@ -7,14 +7,14 @@
     env_path: "{{project_path}}/.env"
     python: "{{env_path}}/bin/python"
   tasks:
-#    - name: update repo
-#      git:
-#        repo: https://f3l1s@bitbucket.org/8bitgroup/bt-lostplanet.git
-#        dest: "{{project_path}}"
-#        version: master
-#        accept_hostkey: True
-#        update: True
-#      notify:
+    - name: update repo
+      git:
+        repo: git@bitbucket.org:8bitgroup/bt-lostplanet.git
+        dest: "{{project_path}}"
+        version: master
+        accept_hostkey: True
+        update: True
+      notify:
 #        - run migrations
     - name: init folders
       file:
@@ -30,6 +30,6 @@
       with_items:
         - config.py
         - supervisor.conf
-#  handlers:
-#    - name: run migrations
-#      shell: "cd {{project_path}} && {{env_path}}/bin/flask db upgrade"
+  handlers:
+    - name: run migrations
+      shell: "cd {{project_path}} && {{env_path}}/bin/flask db upgrade"
