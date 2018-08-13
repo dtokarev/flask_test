@@ -25,9 +25,13 @@ def run():
                 resource_type = ResourceType.MOVIE
                 json_key = 'movies'
 
-            response = requests.get(source_url).text
+            response = requests.get(source_url)
 
-            data = json.loads(response)
+            try:
+                data = json.loads(response.text)
+            except ValueError as e:
+                app.logger.error('Can not parse {} \n {} \n {}'.format(source_url, response.status_code, e))
+                continue
 
             for movie in data.get('report', {}).get(json_key, []):
                 s = Search.create(movie, source_name, resource_type)
