@@ -1,9 +1,9 @@
 DEBUG = False
 TESTING = False
 
-SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}/lp_download'.format({{db_user}}, {{db_pass}}, {{db_host}})
+SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}/lp_download'.format("{{db_user}}", "{{db_pass}}", "{{db_host}}")
 SQLALCHEMY_BINDS = {
-    'db_resource': 'mysql://{}:{}@{}/lp_resource'.format({{db_user}}, {{db_pass}}, {{db_host}})
+    'db_resource': 'mysql://{}:{}@{}/lp_resource'.format("{{db_user}}", "{{db_pass}}", "{{db_host}}")
 }
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ECHO = False
