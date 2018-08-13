@@ -15,7 +15,7 @@
         accept_hostkey: True
         update: True
       notify:
-#        - run migrations
+        - run migrations
     - name: init folders
       file:
         path="{{project_instance_path}}"
@@ -30,6 +30,3 @@
       with_items:
         - config.py
         - supervisor.conf
-  handlers:
-    - name: run migrations
-      shell: "cd {{project_path}} && {{env_path}}/bin/flask db upgrade"

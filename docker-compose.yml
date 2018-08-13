@@ -10,3 +10,4 @@ services:
       - /var/log/project_log:/app/instance/log
     ports:
       - "8000:8000"
+    network_mode: "host"
