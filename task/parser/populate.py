@@ -46,9 +46,6 @@ def run():
             app.logger.warn('adding new {} {}'.format(source_name, len(db.session.new)))
             db.session.commit()
 
-        sleep_for = 4*3600
-        app.logger.warn('sleep for {}'.format(sleep_for))
-        time.sleep(sleep_for)
-
+            time.sleep(3600)
 
 run()
