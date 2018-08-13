@@ -30,3 +30,4 @@
       with_items:
         - config.py
         - supervisor.conf
+        - entrypoint.sh
