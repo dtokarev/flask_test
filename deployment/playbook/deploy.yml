@@ -2,27 +2,30 @@
 - name: Deployment
   hosts: production
   vars:
-    project_path: "/var/www/{{app_name}}"
-    project_instance_path: "{{project_path}}/instance"
-    env_path: "{{project_path}}/.env"
-    python: "{{env_path}}/bin/python"
+    project_path: "/var/www/{{ app_name }}"
+    project_instance_path: "{{ project_path }}/instance"
+    env_path: "{{ project_path }}/.env"
+    python: "{{ env_path }}/bin/python"
   tasks:
     - name: update repo
       git:
         repo: git@bitbucket.org:8bitgroup/bt-lostplanet.git
-        dest: "{{project_path}}"
+        dest: "{{ project_path }}"
         version: master
         accept_hostkey: True
         update: True
     - name: init folders
       file:
-        path="{{project_instance_path}}"
+        path="{{ item.path }}"
         state=directory
-        mode=0777
+        mode="{{ item.mode }}"
+      with_items:
+        - { path: '{{ project_instance_path }}', mode: '0744' }
+        - { path: '{{ project_instance_path }}/log', mode: '0777' }
     - name: copy instance files
       template:
-        src=../files/instance/{{item}}
-        dest="{{project_instance_path}}/{{item}}"
+        src=../files/instance/{{ item }}
+        dest="{{ project_instance_path }}/{{ item }}"
         force=True
         mode=0755
       with_items:
