@@ -14,6 +14,11 @@
         version: master
         accept_hostkey: True
         update: True
+      notify:
+        - build docker
+        - down docker
+        - up docker
+
     - name: init folders
       file:
         path="{{ item.path }}"
@@ -22,6 +27,7 @@
       with_items:
         - { path: '{{ project_instance_path }}', mode: '0744' }
         - { path: '{{ project_instance_path }}/log', mode: '0777' }
+
     - name: copy instance files
       template:
         src=../files/instance/{{ item }}
@@ -32,3 +38,31 @@
         - config.py
         - supervisor.conf
         - entrypoint.sh
+
+  handlers:
+    - name: build docker
+      command: "docker-compose build"
+      args:
+        chdir: "{{project_path}}"
+    - name: down docker
+      command: "docker-compose down"
+      args:
+        chdir: "{{project_path}}"
+    - name: up docker
+      command: "docker-compose up -d"
+      args:
+        chdir: "{{project_path}}"
+
+
+##    need pip to install docker-compose, apt version does not work. commented for now
+#    - name: run docker
+#      docker_service:
+#        project_name: parser
+#        definition:
+#          version: '2'
+#          services:
+#            parser:
+#              build: "{{ project_path }}"
+#              volumes:
+#                - /var/log/project_log:/app/instance/log
+#              network_mode: "host"
