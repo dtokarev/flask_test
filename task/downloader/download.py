@@ -52,16 +52,24 @@ def download(d: Download):
 
 def get_from_queue() -> Download:
     min_changed_at = datetime.utcnow() - timedelta(minutes=30)
-    return Download.query\
+
+    d = Download.query\
         .filter(
-            Download.id.notin_(download_pool_ids) &
-            (
-                (Download.status.in_([Download.Statuses.NEW, Download.Statuses.PAUSED])) |
-                ((Download.status == Download.Statuses.DOWNLOADING) & (Download.changed_at < min_changed_at))
-            )
+            Download.id.notin_(download_pool_ids)
+            & (Download.status == Download.Statuses.DOWNLOADING) & (Download.changed_at < min_changed_at)
         )\
-        .order_by(func.rand())\
         .first()
+
+    if not d:
+        d = Download.query\
+            .filter(
+                Download.id.notin_(download_pool_ids)
+                & (Download.status.in_([Download.Statuses.NEW, Download.Statuses.PAUSED]))
+            )\
+            .order_by(func.rand())\
+            .first()
+
+    return d
 
 
 def is_downloader_active():
