@@ -6,7 +6,6 @@ from typing import Union
 import requests
 from bs4 import BeautifulSoup
 
-from app_parser import app
 from app_parser.domain.model import Config, ParsedData
 from app_parser.domain.search import SearchPreferences, Matcher
 from app_parser.exception import ResultNotFoundException
@@ -58,8 +57,11 @@ class Rutracker:
 
     def get_page_link(self, preferences: SearchPreferences) -> Union[str, None]:
         for key in preferences.generated_keywords:
-            content = self.get_search_result_page(key)
-            link = self.get_page_link_from_search_result(content, preferences)
+            try:
+                content = self.get_search_result_page(key)
+                link = self.get_page_link_from_search_result(content, preferences)
+            except (ResultNotFoundException, AttributeError):
+                continue
 
             if link:
                 return link
@@ -76,12 +78,10 @@ class Rutracker:
             'pn': None,
         }
         response = self.session.post(self.URL_SEARCH.format(key=key), post_data)
-        app.logger.info("search {} status code {}".format(key, response.status_code))
 
         return response.content
 
     def get_page_content(self, link: str) -> str:
-        app.logger.info('parsing link {}'.format(link))
         response = self.session.get(link)
 
         return response.text
@@ -164,18 +164,14 @@ class Rutracker:
             matcher.bind_link(row.find('div', {'class': 't-title'}).find('a')['href'])
             matchers.append(matcher)
 
-        try:
-            best_matcher = Matcher.get_best(matchers)
-            return Rutracker.URL_PAGE + best_matcher.link
-        except (ResultNotFoundException, AttributeError):
-            return None
+        best_matcher = Matcher.get_best(matchers)
+        return Rutracker.URL_PAGE + best_matcher.link
 
     def _save_session(self):
         """
         saves serialized session to file
         """
         with open(self.SESSION_FILE, 'wb') as file:
-            app.logger.info("session saved to file")
             pickle.dump(self.session, file, pickle.HIGHEST_PROTOCOL)
 
     def _load_session(self) -> bool:
@@ -187,7 +183,6 @@ class Rutracker:
             return False
 
         with open(self.SESSION_FILE, 'rb') as file:
-            app.logger.info("session loaded from file")
             self.session = pickle.load(file)
             return self.is_logged()
 
