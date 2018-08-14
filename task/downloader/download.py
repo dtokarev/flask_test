@@ -35,6 +35,7 @@ def run():
 def download(d: Download):
     app.logger.info('download_id {} - started pid {}'.format(d.id, os.getpid()))
 
+    db.session.close()
     download_service.remember(d.id)
     d = Download.query.filter_by(id=d.id).first()
 
