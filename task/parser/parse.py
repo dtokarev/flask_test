@@ -62,14 +62,11 @@ def search_and_parse(s: Search):
 
 
 def _get_from_queue():
-    while True:
-        # пока только фильмы
-        s = Search.query\
-            .filter_by(status=Search.Statuses.NEW, type=ResourceType.MOVIE)\
-            .order_by(func.rand())\
-            .first()
-        if len(s.title_ru) > 5:
-            return s
+    s = Search.query\
+        .filter_by(status=Search.Statuses.NEW, type=ResourceType.MOVIE)\
+        .order_by(func.rand())\
+        .first()
+    return s
 
 
 def _thread_sleep(lo: int =1, hi: int = 10):
