@@ -20,7 +20,7 @@ class Matcher:
         # self.genre_matched = False
 
     def __repr__(self):
-        return str(self.__dict__)
+        return str(vars(self))
 
     def get_quality(self) -> int:
         """
@@ -48,13 +48,12 @@ class Matcher:
         get best matcher from list based on matcher's quality
         """
         if not matchers:
-            raise ResultNotFoundException('matcher - no result')
+            raise ResultNotFoundException('No match found')
 
         best = sorted(matchers, key=lambda m: m.get_quality())[-1]
 
         if best.get_quality() == 0:
-            print(matchers)
-            raise ResultNotFoundException('matcher - best quality is 0 link {}'.format(best.link))
+            raise ResultNotFoundException('No good match found {}'.format(matchers))
 
         return best
 
