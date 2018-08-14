@@ -6,8 +6,7 @@ ADD . /app/
 
 ENV DEBIAN_FRONTEND=noninteractive \
     FLASK_APP=/app/app.py \
-    FLASK_DEBUG=0 \
-    LD_LIBRARY_PATH=/usr/local/mysql/lib
+    FLASK_DEBUG=1
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc \
