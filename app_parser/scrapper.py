@@ -6,6 +6,7 @@ from typing import Union
 import requests
 from bs4 import BeautifulSoup
 
+from app_parser import app
 from app_parser.domain.model import Config, ParsedData
 from app_parser.domain.search import SearchPreferences, Matcher
 from app_parser.exception import ResultNotFoundException
@@ -75,12 +76,12 @@ class Rutracker:
             'pn': None,
         }
         response = self.session.post(self.URL_SEARCH.format(key=key), post_data)
-        print("search {} status code {}".format(key, response.status_code))
+        app.logger.info("search {} status code {}".format(key, response.status_code))
 
         return response.content
 
     def get_page_content(self, link: str) -> str:
-        print('parsing link {}'.format(link))
+        app.logger.info('parsing link {}'.format(link))
         response = self.session.get(link)
 
         return response.text
@@ -174,7 +175,7 @@ class Rutracker:
         saves serialized session to file
         """
         with open(self.SESSION_FILE, 'wb') as file:
-            print("session saved to file")
+            app.logger.info("session saved to file")
             pickle.dump(self.session, file, pickle.HIGHEST_PROTOCOL)
 
     def _load_session(self) -> bool:
@@ -186,7 +187,7 @@ class Rutracker:
             return False
 
         with open(self.SESSION_FILE, 'rb') as file:
-            print("session loaded from file")
+            app.logger.info("session loaded from file")
             self.session = pickle.load(file)
             return self.is_logged()
 
