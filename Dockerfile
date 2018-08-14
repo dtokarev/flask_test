@@ -6,7 +6,7 @@ ADD . /app/
 
 ENV DEBIAN_FRONTEND=noninteractive \
     FLASK_APP=/app/app.py \
-    FLASK_DEBUG=1
+    FLASK_DEBUG=1 \
     PYTHONPATH="${PYTHONPATH}:/usr/lib/python3/dist-packages/"
 
 RUN apt-get update \
