@@ -1,4 +1,4 @@
-FROM python:3-slim
+FROM python:3.5-slim
 
 RUN mkdir /app
 WORKDIR /app
@@ -7,6 +7,7 @@ ADD . /app/
 ENV DEBIAN_FRONTEND=noninteractive \
     FLASK_APP=/app/app.py \
     FLASK_DEBUG=1
+    PYTHONPATH="${PYTHONPATH}:/usr/lib/python3/dist-packages/"
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc \
