@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from redis import Redis
 
 from app_parser.logger import config_logger
 
@@ -23,6 +24,11 @@ app = create_app()
 config_logger(app)
 db = CustomAlchemy(app)
 migrate = Migrate(app, db, compare_type=app.config.get('DEBUG', False))
+redis = Redis(
+    host=app.config.get('REDIS_HOST'),
+    port=app.config.get('REDIS_PORT'),
+    db=app.config.get('REDIS_DB')
+)
 
 from app_parser import route
 from app_parser.domain import model

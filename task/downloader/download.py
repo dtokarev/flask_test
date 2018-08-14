@@ -5,20 +5,19 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import func
 
-from app_parser import app
-from app_parser import db
+from app_parser import app, db
 from app_parser.domain.model import Download, Config
 from app_parser.service.torrent_service import Torrent
-
-download_pool_ids = set()
+from app_parser.service import download_service
 
 
 def run():
+    download_service.forget_all_downloads()
     while True:
         db.session.close()
         if not is_downloader_active() \
                 or not is_space_enough() \
-                or len(download_pool_ids) >= Config.get('BT_POOL_LIMIT', int):
+                or len(download_service.get_all_downloads()) >= Config.get('BT_POOL_LIMIT', int):
             time.sleep(5)
             continue
 
@@ -35,7 +34,7 @@ def run():
 
 
 def download(d: Download):
-    download_pool_ids.add(d.id)
+    download_service.redis(d.id)
     d = Download.query.filter_by(id=d.id).first()
 
     try:
@@ -47,7 +46,7 @@ def download(d: Download):
         d.error = str(e)
     finally:
         db.session.commit()
-        download_pool_ids.remove(d.id)
+        download_service.forget_download(d)
 
 
 def get_from_queue() -> Download:
@@ -55,7 +54,7 @@ def get_from_queue() -> Download:
 
     d = Download.query\
         .filter(
-            Download.id.notin_(download_pool_ids)
+            Download.id.notin_(download_service.get_all_downloads())
             & (Download.status == Download.Statuses.DOWNLOADING) & (Download.changed_at < min_changed_at)
         )\
         .first()
@@ -63,7 +62,7 @@ def get_from_queue() -> Download:
     if not d:
         d = Download.query\
             .filter(
-                Download.id.notin_(download_pool_ids)
+                Download.id.notin_(download_service.get_all_downloads())
                 & (Download.status.in_([Download.Statuses.NEW, Download.Statuses.PAUSED]))
             )\
             .order_by(func.rand())\
@@ -75,7 +74,8 @@ def get_from_queue() -> Download:
 def is_downloader_active():
     is_active = Config.get('BT_IS_ACTIVE', bool)
     if not is_active:
-        app.logger.warn('Further downloads stopped via configs, downloads in queue {}'.format(len(download_pool_ids)))
+        app.logger.warn('Further downloads stopped via configs, downloads in queue {}'
+                        .format(len(download_service.get_all_downloads())))
 
     return is_active
 

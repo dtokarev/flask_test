@@ -15,6 +15,7 @@ RUN apt-get update \
                           mysql-client \
                           python3-libtorrent \
                           supervisor \
+                          redis-tools \
                           less \
     && pip install --upgrade pip \
     && pip install -r requirements.txt \
