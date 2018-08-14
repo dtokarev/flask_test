@@ -26,7 +26,7 @@ def run():
         if not s:
             app.logger.warn('no item to search')
             time.sleep(60)
-            return
+            continue
 
         _thread_sleep()
         search_and_parse(s)
