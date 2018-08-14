@@ -33,9 +33,9 @@ def run():
 
 
 def download(d: Download):
-    app.logger.info('new download process started, pid {}'.format(os.getpid()))
+    app.logger.info('download_id {} - started pid {}'.format(d.id, os.getpid()))
 
-    download_service.redis(d.id)
+    download_service.remember(d.id)
     d = Download.query.filter_by(id=d.id).first()
 
     try:
@@ -76,7 +76,7 @@ def is_downloader_active():
     is_active = Config.get('BT_IS_ACTIVE', bool)
     if not is_active:
         app.logger.warn('Further downloads stopped via configs, downloads in queue {}'
-                        .format(len(download_service.get_all())))
+                        .format(download_service.count()) )
 
     return is_active
 
