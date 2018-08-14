@@ -6,7 +6,6 @@ from typing import Union
 import requests
 from bs4 import BeautifulSoup
 
-from app_parser import app
 from app_parser.domain.model import Config, ParsedData
 from app_parser.domain.search import SearchPreferences, Matcher
 from app_parser.exception import ResultNotFoundException
@@ -62,7 +61,6 @@ class Rutracker:
                 content = self.get_search_result_page(key)
                 link = self.get_page_link_from_search_result(content, preferences)
             except (ResultNotFoundException, AttributeError) as e:
-                app.logger.error(e)
                 continue
 
             if link:
