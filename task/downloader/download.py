@@ -1,6 +1,6 @@
 import os
 import time
-import threading
+import multiprocessing as mp
 from datetime import datetime, timedelta
 
 from sqlalchemy import func
@@ -12,13 +12,12 @@ from app_parser.service import download_service
 
 
 def run():
-    download_service.forget_all_downloads()
+    download_service.forget_all()
     while True:
-        db.session.close()
         if not is_downloader_active() \
                 or not is_space_enough() \
-                or len(download_service.get_all_downloads()) >= Config.get('BT_POOL_LIMIT', int):
-            time.sleep(5)
+                or download_service.count() >= Config.get('BT_POOL_LIMIT', int):
+            time.sleep(10)
             continue
 
         d = get_from_queue()
@@ -27,13 +26,15 @@ def run():
             time.sleep(10)
             continue
 
-        t = threading.Thread(target=download, daemon=True, args=(d,), name='thread_download_id_{}'.format(d.id))
-        t.start()
-        app.logger.info('new download thread started {}, pid {}'.format(t, os.getpid()))
+        fork = mp.Process(target=download, args=(d,), name='fork_download_id_{}'.format(d.id))
+        fork.start()
+
         time.sleep(3)
 
 
 def download(d: Download):
+    app.logger.info('new download process started, pid {}'.format(os.getpid()))
+
     download_service.redis(d.id)
     d = Download.query.filter_by(id=d.id).first()
 
@@ -46,7 +47,7 @@ def download(d: Download):
         d.error = str(e)
     finally:
         db.session.commit()
-        download_service.forget_download(d)
+        download_service.forget(d)
 
 
 def get_from_queue() -> Download:
@@ -54,7 +55,7 @@ def get_from_queue() -> Download:
 
     d = Download.query\
         .filter(
-            Download.id.notin_(download_service.get_all_downloads())
+            Download.id.notin_(download_service.get_all())
             & (Download.status == Download.Statuses.DOWNLOADING) & (Download.changed_at < min_changed_at)
         )\
         .first()
@@ -62,7 +63,7 @@ def get_from_queue() -> Download:
     if not d:
         d = Download.query\
             .filter(
-                Download.id.notin_(download_service.get_all_downloads())
+                Download.id.notin_(download_service.get_all())
                 & (Download.status.in_([Download.Statuses.NEW, Download.Statuses.PAUSED]))
             )\
             .order_by(func.rand())\
@@ -75,7 +76,7 @@ def is_downloader_active():
     is_active = Config.get('BT_IS_ACTIVE', bool)
     if not is_active:
         app.logger.warn('Further downloads stopped via configs, downloads in queue {}'
-                        .format(len(download_service.get_all_downloads())))
+                        .format(len(download_service.get_all())))
 
     return is_active
 
@@ -87,8 +88,8 @@ def is_space_enough():
     is_enough = current < max
 
     if not is_enough:
-        app.logger.warn('Further downloads stopped disk space limit reached (limit={}%, used={}%), '
-                        'downloads in queue {}'.format(max, current, len(download_pool_ids)))
+        app.logger.warn( 'Further downloads stopped disk space limit reached (limit={}%, used={}%), '
+                         'downloads in queue {}'.format(max, current, download_service.count()) )
 
     return is_enough
 
