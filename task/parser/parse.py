@@ -53,7 +53,7 @@ def search_and_parse(s: Search):
         db.session.rollback()
         s = Search.query.get(s.id)
         if isinstance(e, NonCriticalException):
-            app.logger.error('no torrent found for search_id {} {}'.format(s.id, e))
+            app.logger.warn('no torrent found for search_id {} {}'.format(s.id, e))
             s.error = str(e)
             s.status = Search.Statuses.NOT_FOUND
         else:

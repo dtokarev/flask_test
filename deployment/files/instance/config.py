@@ -1,4 +1,4 @@
-DEBUG = False
+DEBUG = True
 TESTING = False
 
 SQLALCHEMY_DATABASE_URI = 'mysql://{}:{}@{}/lp_download'.format("{{db_user}}", "{{db_pass}}", "{{db_host}}")
