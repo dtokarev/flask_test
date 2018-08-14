@@ -41,7 +41,7 @@ def search_and_parse(s: Search):
 
         link = tracker.get_page_link(preferences)
         _thread_sleep()
-        app.logger.info('parsing link {}'.format(link))
+        app.logger.info('search_id {} - parsing link {}'.format(s.id, link))
         raw_html = tracker.get_page_content(link)
 
         s.status = Search.Statuses.COMPLETED
@@ -53,11 +53,11 @@ def search_and_parse(s: Search):
         db.session.rollback()
         s = Search.query.get(s.id)
         if isinstance(e, NonCriticalException):
-            app.logger.warn('no torrent found for search_id {} {}'.format(s.id, e))
+            app.logger.warn('search_id {} - no torrent found {}'.format(s.id, e))
             s.error = str(e)
             s.status = Search.Statuses.NOT_FOUND
         else:
-            app.logger.error('exception for search_id {} {}'.format(s.id, traceback.format_exc()))
+            app.logger.error('search_id {} - exception {}'.format(s.id, traceback.format_exc()))
             s.status = Search.Statuses.ERROR
             s.error = traceback.format_exc()
     finally:

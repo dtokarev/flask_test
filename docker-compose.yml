@@ -4,8 +4,6 @@ version: "2"
 services:
   parser:
     build: .
-    environment:
-      - MODE=dev
     volumes:
       - /var/log/project_log:/app/instance/log
     ports:
