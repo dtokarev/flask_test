@@ -14,7 +14,7 @@ def generate_keywords(*keys: str, year=None):
     result.append( '{} {}'.format(' '.join(clean_keys), get_year_str()) )
     # result.append( '{}'.format(keys[0]) )
     result.append( '{} {}'.format(clean_keys[0], get_year_str()) )
-    result.append(' '.join(clean_keys))
+    # result.append(' '.join(clean_keys))
 
     # strip if stripped version is not empty
     result = [i.strip() for i in result if i.strip()]
