@@ -1,4 +1,5 @@
 import os
+import threading
 import time
 import multiprocessing as mp
 from datetime import datetime, timedelta
@@ -26,17 +27,20 @@ def run():
             time.sleep(10)
             continue
 
-        fork = mp.Process(target=download, args=(d,), name='fork_download_id_{}'.format(d.id))
-        fork.start()
+        t = threading.Thread(target=download, daemon=True, args=(d,), name='thread_download_id_{}'.format(d.id))
+        t.start()
+        # fork = mp.Process(target=download, args=(d, ), name='fork_download_id_{}'.format(d.id))
+        # fork.start()
 
         time.sleep(3)
 
 
 def download(d: Download):
+    download_service.remember(d.id)
+
     app.logger.info('download_id {} - started pid {}'.format(d.id, os.getpid()))
 
     db.session.close()
-    download_service.remember(d.id)
     d = Download.query.filter_by(id=d.id).first()
 
     try:

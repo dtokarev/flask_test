@@ -78,8 +78,8 @@ def _thread_sleep(lo: int =1, hi: int = 10):
 
 def _is_parser_active():
     is_active = Config.get('PARSER_IS_ACTIVE', bool)
-    if not is_active:
-        app.logger.warn('Parser stopped via configs')
+    # if not is_active:
+    #     app.logger.warn('Parser stopped via configs')
 
     return is_active
 
