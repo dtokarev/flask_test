@@ -1,7 +1,7 @@
 import os
 import pickle
 import re
-from typing import Union
+from typing import Union, Optional
 
 import requests
 from bs4 import BeautifulSoup
@@ -97,14 +97,11 @@ class Rutracker:
         body_text = str(bs.find('div', {'class': 'post_body'}))
         body_text = re.sub(r'<hr[^>]+>', '\n', body_text)
         body_text = body_text.replace('<span class="post-b">', '\n<span class="post-b">')
-        # body_text = body_text.replace('<span class="post-br">\n</span>', '\n')
         body_text = re.sub(r'<br/?>', '\n', body_text)
         # remove any tags with double colon
         body_text = re.sub(r'<[^>]+:[^>]+>([^<]+)<[^>]+>', r'\g<1>', body_text)
         body_text = re.sub(r'</span>:[\n\s]+', '</span>: ', body_text)
         body_text = re.sub(r':</span>[\n\s]+', '</span>: ', body_text)
-        # # no new lines after text
-        # body_text = re.sub(r'([$>])[\s\n]+', r'\g<1>', body_text)
 
         raw_data = {}
         for k, v in re.findall(r'<span class="post-b">(.*)</span>[ :]+(.+)', body_text):
@@ -124,7 +121,7 @@ class Rutracker:
         data.country = get_by_list(raw_data, ['Страна', 'Выпущено'])
         data.format = get_by_list(raw_data, ['Формат видео', 'Формат'])
         data.duration = duration_human_to_sec(get_by_list(raw_data, ['Продолжительность']))
-        data.translation = raw_data.get('Перевод')
+        data.translation = Rutracker.guess_translation(raw_data.get('Перевод'))
         data.subtitle = raw_data.get('Субтитры')
         data.subtitle_format = raw_data.get('Формат субтитров')
         data.genre = raw_data.get('Жанр')
@@ -135,6 +132,13 @@ class Rutracker:
         data.audio_info = raw_data.get('Аудио')
 
         return data
+
+    @staticmethod
+    def guess_translation(text) -> Optional[str]:
+        if not text:
+            return None
+
+        return text
 
     @staticmethod
     def get_page_link_from_search_result(html: Union[str, bytes], preferences: SearchPreferences) -> Union[str, None]:
