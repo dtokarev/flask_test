@@ -29,11 +29,13 @@ def run():
 
             try:
                 data = json.loads(response.text)
+                data_updates = data.get('updates')
+                data = data_updates if data_updates else data.get('report', {}).get(json_key, [])
             except ValueError as e:
                 app.logger.error('Can not parse {} \n {} \n {}'.format(source_url, response.status_code, e))
                 continue
 
-            for movie in data.get('report', {}).get(json_key, []):
+            for movie in data:
                 s = Search.create(movie, source_name, resource_type)
 
                 if not s.kinopoisk_id or s.kinopoisk_id in existing_ids or s.kinopoisk_id < 1:
