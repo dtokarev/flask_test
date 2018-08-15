@@ -7,11 +7,18 @@ import libtorrent as lt
 from app_parser.domain.model import Config, Download
 from app_parser import db, app
 
+BYTES_IN_MB = 10**6
 ses = lt.session()
 ses.listen_on(80, 80)
 ses.set_settings({
-    'active_downloads': -1,  # Setting the value to -1 means unlimited.
-    'active_limit': -1,      # The target number of active torrents is min(active_downloads + active_seeds, active_limit)
+    # Setting the value to -1 means unlimited.
+    'active_downloads': -1,
+    # The target number of active torrents is min(active_downloads + active_seeds, active_limit)
+    'active_limit': -1,
+    # upload_rate_limit and download_rate_limit sets the session-global limits of upload and download rate limits,
+    # in bytes per second. By default peers on the local network are not rate limited.
+    'download_rate_limit': 40 * BYTES_IN_MB,
+    'upload_rate_limit': 40 * BYTES_IN_MB,
 })
 ses.start_dht()
 ses.set_max_connections(10000)
@@ -61,8 +68,6 @@ class Torrent:
             status_calm_counter = status_calm_counter - 1 if term_attr_before == self.d.download_rate_kb else status_calm_limit
             if status_calm_counter < 0:
                 raise Exception('torrent status not changed {} times'.format(status_calm_limit))
-
-        del self.torrent_handle
 
         self.d.status = Download.Statuses.COMPLETED
         self.d.downloaded_at = datetime.utcnow()
