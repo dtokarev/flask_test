@@ -76,7 +76,7 @@ class Torrent:
         self.d.num_peers = bt_status.num_peers if bt_status else 0
         self.d.total_download_kb = bt_status.total_download / 1000 if bt_status else 0
 
-        if bt_status.error:
+        if bt_status and bt_status.error:
             self.d.error = bt_status.error
 
         db.session.commit()
