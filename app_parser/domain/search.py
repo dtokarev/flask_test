@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Set
 
 from app_parser.exception import ResultNotFoundException
 
@@ -16,6 +16,7 @@ class Matcher:
         self.keyword_matched = False
         self.seeders_num = 0
         self.category_matched = False
+        self.translation = ''
         # self.source_type_matched = False
         # self.genre_matched = False
 
@@ -43,16 +44,25 @@ class Matcher:
         self.link = link
 
     @staticmethod
-    def get_best(matchers: List['Matcher']):
+    def get_best(matchers: List['Matcher'], cnt=1) -> List['Matcher']:
         """
         get best matcher from list based on matcher's quality
         """
         if not matchers:
             raise ResultNotFoundException('No match found')
 
-        best = sorted(matchers, key=lambda m: m.get_quality())[-1]
+        all_matchers = sorted(matchers, key=lambda m: -m.get_quality())
+        used_translations = set()
+        best = list()
 
-        if best.get_quality() == 0:
+        for i in range(cnt):
+            for m in all_matchers:
+                if m.get_quality() > 0 and m.translation not in used_translations:
+                    used_translations.add(m.translation)
+                    best.append(m)
+                    break
+
+        if not best:
             raise ResultNotFoundException('No good match found {}'.format(matchers))
 
         return best
@@ -66,12 +76,17 @@ class SearchPreferences:
     KEY_SEEDERS = 'parsed_seeders'
     KEY_KEYWORD = 'parsed_keyword'
     KEY_CATEGORY_NAME = 'parsed_category_name'
+    KEY_TRANSLATION = 'parsed_transaltion'
     DEFAULT_UNIT = 'GB'
 
     # source_type_list = 'BDRip', 'HDTVRip'
     # genres_list = 'боевик', 'триллер', 'приключения', 'триллер', 'фантастика', 'мелодрама'
 
-    def __init__(self, keywords: List, year: int = None, acceptable_size_range=('700 MB', '2.5 GB')):
+    def __init__(self,
+                 keywords: List, year: int = None,
+                 acceptable_size_range=('700 MB', '2.5 GB'),
+                 cnt=1
+                 ):
         # TODO: inject params from outside
 
         from app_parser.utils.search import generate_keywords
@@ -81,6 +96,7 @@ class SearchPreferences:
         self.keywords = keywords
         self.generated_keywords = generate_keywords(*keywords, year=year)
         self.category_names_like = ('Фильм', 'Сериал', 'Кино', 'Видео', 'Кинематограф')
+        self.count = cnt
         # self.best_size_range = '700 MB', '800 MB'
         # self.source_type = None
         # self.genre = None

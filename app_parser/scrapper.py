@@ -1,7 +1,7 @@
 import os
 import pickle
 import re
-from typing import Union, Optional
+from typing import Union, Optional, Set, List
 
 import requests
 from bs4 import BeautifulSoup
@@ -55,16 +55,16 @@ class Rutracker:
         bs = BeautifulSoup(response.content, "html.parser")
         return bool(bs.find('a', {'href': '#pms-menu'}))
 
-    def get_page_link(self, preferences: SearchPreferences) -> Union[str, None]:
+    def get_page_links(self, preferences: SearchPreferences) -> List[str]:
         for key in preferences.generated_keywords:
             try:
                 content = self.get_search_result_page(key)
-                link = self.get_page_link_from_search_result(content, preferences)
+                links = self.get_page_link_from_search_result(content, preferences)
             except (ResultNotFoundException, AttributeError) as e:
                 continue
 
-            if link:
-                return link
+            if links:
+                return links
 
         raise ResultNotFoundException('no link found for {}'.format(preferences))
 
@@ -141,7 +141,7 @@ class Rutracker:
         return text
 
     @staticmethod
-    def get_page_link_from_search_result(html: Union[str, bytes], preferences: SearchPreferences) -> Union[str, None]:
+    def get_page_link_from_search_result(html: Union[str, bytes], preferences: SearchPreferences) -> List[str]:
         bs = BeautifulSoup(html, "html.parser")
         result = bs.find('table', {'id': 'tor-tbl'})
 
@@ -152,6 +152,9 @@ class Rutracker:
             category_name = row.find('a', {'class': 'gen'})
             seeders_tag = row.find('b', {'class': 'seedmed'})
             seeders = int(seeders_tag.get_text()) if seeders_tag else 0
+            link_info = re.search(r"(?P<title>.+)\s*\[(?P<info>.+)\]\s*(?P<translation>.+)", link_tag.get_text())
+            link_info = link_info.groupdict() if link_info else {}
+            link = row.find('div', {'class': 't-title'}).find('a')['href']
 
             if not size_tag:
                 continue
@@ -159,17 +162,17 @@ class Rutracker:
             actual_data = {
                 SearchPreferences.KEY_SIZE: size_tag.get_text(),
                 SearchPreferences.KEY_SEEDERS: seeders,
-                SearchPreferences.KEY_KEYWORD: link_tag.get_text(),
+                SearchPreferences.KEY_KEYWORD: link_info.get('title'),
                 SearchPreferences.KEY_CATEGORY_NAME: category_name.get_text(),
+                SearchPreferences.KEY_TRANSLATION: link_info.get('translation', '').split('+')[0].strip(),
             }
 
-            # check size, format etc
-            matcher = create_matcher(preferences, actual_data)
-            matcher.bind_link(row.find('div', {'class': 't-title'}).find('a')['href'])
+            matcher = create_matcher(preferences, actual_data, link)
             matchers.append(matcher)
 
-        best_matcher = Matcher.get_best(matchers)
-        return Rutracker.URL_PAGE + best_matcher.link
+        best_matcher = Matcher.get_best(matchers, preferences.count)
+
+        return [Rutracker.URL_PAGE + m.link for m in best_matcher]
 
     def _save_session(self):
         """

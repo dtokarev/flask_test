@@ -3,11 +3,12 @@ from app_parser.domain.search import Matcher, SearchPreferences
 from app_parser.utils.unit_converter import size_human_to_float
 
 
-def create_matcher(preferences: SearchPreferences, actual_data: dict) -> Matcher:
+def create_matcher(preferences: SearchPreferences, actual_data: dict, link: str) -> Matcher:
     """
     Creates matcher from preferences and actual parsed data
     """
     matcher = Matcher()
+    matcher.bind_link(link)
 
     # size
     size_unit = SearchPreferences.DEFAULT_UNIT
@@ -32,5 +33,7 @@ def create_matcher(preferences: SearchPreferences, actual_data: dict) -> Matcher
     for k in preferences.keywords:
         if k in actual_title:
             matcher.keyword_matched = True
+
+    matcher.translation = actual_data.get(SearchPreferences.KEY_TRANSLATION)
 
     return matcher

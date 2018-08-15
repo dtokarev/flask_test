@@ -37,17 +37,20 @@ def search_and_parse(s: Search):
         s.status = Search.Statuses.PROCESSING
         db.session.commit()
 
-        preferences = SearchPreferences(keywords=[s.title_ru, s.title_en], year=s.year)
+        cnt = 4 if s.type == ResourceType.SERIES else 2
+        preferences = SearchPreferences(keywords=[s.title_ru, s.title_en], year=s.year, cnt=cnt)
 
-        link = tracker.get_page_link(preferences)
-        _thread_sleep()
-        app.logger.info('search_id {} - parsing link {}'.format(s.id, link))
-        raw_html = tracker.get_page_content(link)
+        links = tracker.get_page_links(preferences)
 
-        s.status = Search.Statuses.COMPLETED
-        parsed_data = ParsedData.create_from(s, link, raw_html)
-        db.session.add(parsed_data)
-        db.session.add(Download.create_from(s, parsed_data))
+        for link in links:
+            _thread_sleep()
+            app.logger.info('search_id {} - parsing link {}'.format(s.id, link))
+            raw_html = tracker.get_page_content(link)
+
+            s.status = Search.Statuses.COMPLETED
+            parsed_data = ParsedData.create_from(s, link, raw_html)
+            db.session.add(parsed_data)
+            db.session.add(Download.create_from(s, parsed_data))
 
     except Exception as e:
         db.session.rollback()

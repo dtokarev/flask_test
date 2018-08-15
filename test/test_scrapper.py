@@ -26,13 +26,13 @@ def test_rutr_login():
 @nottest
 @with_setup(setup_func)
 def test_rutr_search_link():
-    link = tracker.get_page_link(SearchPreferences(['movie lorem ipsum dolor 2000']))
-    assert_is_none(link)
+    links = tracker.get_page_links(SearchPreferences(['movie lorem ipsum dolor 2000']))
+    assert_is_none(links)
 
-    link = tracker.get_page_link(SearchPreferences(['The Shawshank Redemption'], year=1994))
-    assert_is_not_none(link)
+    links = tracker.get_page_links(SearchPreferences(['The Shawshank Redemption'], year=1994))
+    assert_is_not_none(links)
 
-    assert_true(link.endswith('5460105'))
+    assert_true(links[0].endswith('5460105'))
 
 
 def read_from_file(rel_path:str) -> str:
@@ -97,14 +97,14 @@ def test_get_page_link_from_search_result():
     html = read_from_file(os.path.join('data', 'rutr_srp_1.html'))
 
     preferences = SearchPreferences(['Одержимая'], 2013)
-    link = Rutracker.get_page_link_from_search_result(html, preferences)
-    assert_true(link.endswith('4734868'))
+    links = Rutracker.get_page_link_from_search_result(html, preferences)
+    assert_true(links[0].endswith('4734868'))
 
     preferences = SearchPreferences(['Одержимая'], 2013, acceptable_size_range=('3 GB', '4 GB'))
-    link = Rutracker.get_page_link_from_search_result(html, preferences)
-    assert_true(link.endswith('5473278'))
+    links = Rutracker.get_page_link_from_search_result(html, preferences)
+    assert_true(links[0].endswith('5473278'))
 
     html = read_from_file(os.path.join('data', 'rutr_srp_2.html'))
     preferences = SearchPreferences(['Квартира', 'The Apartment'], 1960)
-    link = Rutracker.get_page_link_from_search_result(html, preferences)
-    assert_true(link.endswith('2243255'))
+    links = Rutracker.get_page_link_from_search_result(html, preferences)
+    assert_true(links[0].endswith('2243255'))
