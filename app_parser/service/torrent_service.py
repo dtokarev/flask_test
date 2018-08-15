@@ -14,7 +14,7 @@ ses.set_settings({
     'active_limit': -1,      # The target number of active torrents is min(active_downloads + active_seeds, active_limit)
 })
 ses.start_dht()
-ses.set_max_connections(1000)
+ses.set_max_connections(10000)
 
 
 class Torrent:
@@ -62,6 +62,8 @@ class Torrent:
             if status_calm_counter < 0:
                 raise Exception('torrent status not changed {} times'.format(status_calm_limit))
 
+        del self.torrent_handle
+
         self.d.status = Download.Statuses.COMPLETED
         self.d.downloaded_at = datetime.utcnow()
         self.update_download(None)
@@ -73,5 +75,8 @@ class Torrent:
         self.d.upload_rate_kb = bt_status.upload_rate / 1000 if bt_status else 0
         self.d.num_peers = bt_status.num_peers if bt_status else 0
         self.d.total_download_kb = bt_status.total_download / 1000 if bt_status else 0
+
+        if bt_status.error:
+            self.d.error = bt_status.error
 
         db.session.commit()
