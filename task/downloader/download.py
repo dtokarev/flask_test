@@ -52,7 +52,7 @@ def download(d: Download):
         d.error = str(e)
     finally:
         db.session.commit()
-        download_service.forget(d)
+        download_service.forget(d.id)
 
 
 def get_from_queue() -> Download:
