@@ -42,7 +42,7 @@ class Torrent:
             #     'http://bt4.t-ru.org/ann'
             # ],
         }
-        self.torrent_handle = lt.add_magnet_uri(ses, self.d.magnet_link, params)
+        self.torrent_handle = lt.add_magnet_uri(ses, self.d.parsed_data.magnet_link, params)
 
     def download(self):
         status_calm_limit = Config.get('BT_CALM_TERM_LIMIT', int)
