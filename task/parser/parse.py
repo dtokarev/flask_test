@@ -40,17 +40,17 @@ def search_and_parse(s: Search):
         cnt = 4 if s.type == ResourceType.SERIES else 2
         preferences = SearchPreferences(keywords=[s.title_ru, s.title_en], year=s.year, cnt=cnt)
 
-        links = tracker.get_page_links(preferences)
+        matches = tracker.get_matches(preferences)
 
-        for link in links:
+        for m in matches:
             _thread_sleep()
-            app.logger.info('search_id {} - parsing link {}'.format(s.id, link))
-            raw_html = tracker.get_page_content(link)
+            app.logger.info('search_id {} - parsing link {}'.format(s.id, m.link))
+            raw_html = tracker.get_page_content(m.link)
 
             s.status = Search.Statuses.COMPLETED
-            parsed_data = ParsedData.create_from(s, link, raw_html)
+            parsed_data = ParsedData.create(s, m, raw_html)
             db.session.add(parsed_data)
-            db.session.add(Download.create_from(s, parsed_data))
+            db.session.add(Download.create(parsed_data, s.type))
 
     except Exception as e:
         db.session.rollback()
@@ -70,6 +70,7 @@ def search_and_parse(s: Search):
 def _get_from_queue():
     s = Search.query\
         .filter_by(status=Search.Statuses.NEW, type=ResourceType.MOVIE)\
+        .filter(func.length(Search.title_ru) > 10)\
         .order_by(func.rand())\
         .first()
     return s

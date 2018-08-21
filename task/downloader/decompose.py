@@ -24,13 +24,13 @@ def run():
             # 'season_no': search.season_number,
             'episode_title': search.title_ru,
             'year': search.year,
-            'search_id': search.id,
+            'parsed_data_id': parsed.id,
             'type': search.type,
             'genre': search.get_from_raw('genre', parsed.genre),
             'country': search.get_from_raw('country', parsed.country),
             'description': search.get_from_raw('description', parsed.description),
             'duration': parsed.duration,
-            'translation': parsed.translation,
+            'translation': parsed.translation_code,
         }
 
         # TODO: добавить логику для сезонов

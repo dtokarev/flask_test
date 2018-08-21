@@ -12,9 +12,9 @@ def run():
     while True:
         sources = {
             'movies_foreign': Config.get('FOREIGN_MOVIE_SOURCE'),
-            'movies_russian': Config.get('RUSSIAN_MOVIE_SOURCE'),
-            'series_foreign': Config.get('FOREIGN_SERIES_SOURCE'),
-            'series_russian': Config.get('RUSSIAN_SERIES_SOURCE')
+            # 'movies_russian': Config.get('RUSSIAN_MOVIE_SOURCE'),
+            # 'series_foreign': Config.get('FOREIGN_SERIES_SOURCE'),
+            # 'series_russian': Config.get('RUSSIAN_SERIES_SOURCE')
         }
 
         for source_name, source_url in sources.items():
@@ -29,8 +29,7 @@ def run():
 
             try:
                 data = json.loads(response.text)
-                data_updates = data.get('updates')
-                data = data_updates if data_updates else data.get('report', {}).get(json_key, [])
+                data = data.get('updates', data.get('report', {}).get(json_key, []))
             except ValueError as e:
                 app.logger.error('Can not parse {} \n {} \n {}'.format(source_url, response.status_code, e))
                 continue
@@ -38,14 +37,14 @@ def run():
             for movie in data:
                 s = Search.create(movie, source_name, resource_type)
 
-                if not s.kinopoisk_id or s.kinopoisk_id in existing_ids or s.kinopoisk_id < 1:
+                if not s.kinopoisk_id \
+                        or s.kinopoisk_id in existing_ids:
                     continue
 
                 existing_ids.add(s.kinopoisk_id)
-
                 db.session.add(s)
 
-            app.logger.warn('adding new {} {}'.format(source_name, len(db.session.new)))
+            app.logger.warning('adding new {} {}'.format(source_name, len(db.session.new)))
             db.session.commit()
 
             time.sleep(3600)

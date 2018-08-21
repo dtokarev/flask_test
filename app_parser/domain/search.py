@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List
 
 from app_parser.exception import ResultNotFoundException
 
@@ -57,8 +57,9 @@ class Matcher:
 
         for i in range(cnt):
             for m in all_matchers:
-                if m.get_quality() > 0 and m.translation not in used_translations:
-                    used_translations.add(m.translation)
+                translation = m.translation.upper()
+                if m.get_quality() > 0 and translation not in used_translations:
+                    used_translations.add(translation)
                     best.append(m)
                     break
 
