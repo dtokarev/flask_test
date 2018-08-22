@@ -1,14 +1,13 @@
-import time
-
 from flask import jsonify
 
 from app_parser import app
 
-a = ['test']
+
+@app.route('/health')
+def health():
+    return jsonify({'message': 'OK'})
 
 
-@app.route('/')
-def test():
-    a.append('fsfs')
-    return jsonify(a)
-
+# @app.handle_exception('404')
+# def handle_404():
+#     return '404 Not found', 404

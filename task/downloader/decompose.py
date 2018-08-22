@@ -46,13 +46,11 @@ def run():
                 }
             file_meta.update(meta)
 
-            episodeResources = list()
             if file_type is FileTypes.VIDEO:
                 episode = Episode.create(file_meta)
                 db.session.add(episode)
             elif file_type is not FileTypes.JUNK:
                 pass
-                # TODO: episode resources
 
         d.status = Download.Statuses.DECOMPOSED
         db.session.commit()
