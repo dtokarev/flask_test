@@ -1,5 +1,6 @@
 from typing import List
 
+from app_parser.domain.Enum import ResourceType
 from app_parser.exception import ResultNotFoundException
 
 
@@ -86,7 +87,7 @@ class SearchPreferences:
     def __init__(self,
                  keywords: List, year: int = None,
                  acceptable_size_range=('700 MB', '2.5 GB'),
-                 cnt=1
+                 sample_count=1
                  ):
         # TODO: inject params from outside
 
@@ -97,10 +98,14 @@ class SearchPreferences:
         self.keywords = keywords
         self.generated_keywords = generate_keywords(*keywords, year=year)
         self.category_names_like = ('Фильм', 'Сериал', 'Кино', 'Видео', 'Кинематограф')
-        self.count = cnt
+        self.sample_count = sample_count
         # self.best_size_range = '700 MB', '800 MB'
         # self.source_type = None
         # self.genre = None
+
+    @staticmethod
+    def get_default_sample_count_for_type(t: ResourceType):
+        return 4 if t == ResourceType.SERIES else 2
 
     def __repr__(self, *args, **kwargs):
         return str(self.__dict__)

@@ -51,7 +51,7 @@ def get_file_info_recursive(folder):
     return files_dict
 
 
-def guess_type(extension, mime):
+def guess_type(extension, mime) -> FileTypes:
     ext_videos = {'avi', 'mp4', 'webm', 'mkv', 'mov', 'wmv', 'mpeg'}
     ext_audio = {'mp3'}
     ext_subs = {'srt', 'sami'}

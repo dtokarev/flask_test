@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy.orm import validates
 
 from app_parser import db, app
-from app_parser.domain.Enum import FileTypes, ResourceType
+from app_parser.domain.Enum import FileTypes, ResourceType, ResourceStatuses
 from app_parser.domain.search import Matcher
 
 
@@ -163,14 +163,11 @@ class Download(db.Model):
 
     parsed_data_id = db.Column(db.BigInteger(), db.ForeignKey('parsed_data.id'), nullable=False)
     parsed_data = db.relationship("ParsedData", uselist=False)
-    # search_id = db.Column(db.BigInteger(), db.ForeignKey('search.id'), nullable=False)
-    # search = db.relationship("Search", uselist=False, back_populates="download")
 
     @staticmethod
     def create(data: ParsedData, resource_type: ResourceType) -> 'Download':
         download = Download()
         download.parsed_data = data
-        # download.search_id = data.search_id
         download.progress = 0
         download.status = Download.Statuses.NEW
         download.type = resource_type
@@ -181,17 +178,10 @@ class Download(db.Model):
 class Episode(db.Model):
     __bind_key__ = 'db_resource'
 
-    class Statuses(enum.Enum):
-        NOT_ENCODED = 'NOT_ENCODED'
-        ENCODING = 'ENCODING'
-        NOT_DEPLOYED = 'NOT_DEPLOYED'
-        READY = 'READY'
-
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
     episode_no = db.Column(db.Integer())
-    episode_title = db.Column(db.UnicodeText(), nullable=False)
-    # season_no = db.Column(db.Integer())
-    # season_title = db.Column(db.UnicodeText())
+    episode_title = db.Column(db.Text(), nullable=False)
+    season_no = db.Column(db.Integer(), default=0)
     kinopoisk_id = db.Column(db.String(250))
     translation = db.Column(db.Text(65535))
     description = db.Column(db.Text(65535))
@@ -199,7 +189,7 @@ class Episode(db.Model):
     duration = db.Column(db.Integer())
     genre = db.Column(db.Text(65535))
     country = db.Column(db.Text())
-    status = db.Column(db.Enum(Statuses))
+    status = db.Column(db.Enum(ResourceStatuses))
     type = db.Column(db.Enum(ResourceType), index=True, nullable=False, default=ResourceType.MOVIE)
     mime = db.Column(db.String(250), nullable=False)
     extension = db.Column(db.String(250), nullable=False)
@@ -233,3 +223,31 @@ class Episode(db.Model):
 
         return media
 
+
+class EpisodeResource(db.model):
+    __bind_key__ = 'db_resource'
+
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    file_type = db.Column(db.Enum(FileTypes))
+    status = db.Column(db.Enum(ResourceStatuses))
+    mime = db.Column(db.String(250), nullable=False)
+    extension = db.Column(db.String(250), nullable=False)
+    url = db.Column(db.String(250), nullable=True)
+    system_path = db.Column(db.String(250))
+    parent_folder = db.Column(db.String(250))
+
+    episode_id = db.Column(db.BigInteger(), db.ForeignKey('episode.id'), nullable=False)
+    episode = db.relationship("Episode", uselist=False)
+
+    @staticmethod
+    def create(params: dict):
+        resource = EpisodeResource()
+        resource.status = Episode.Statuses.NOT_ENCODED
+        resource.file_type = params.get('file_type')
+
+        resource.mime = params.get('mime')
+        resource.extension = params.get('extension')
+        resource.system_path = params.get('system_path')
+        resource.parent_folder = params.get('parent_folder')
+
+        return resource

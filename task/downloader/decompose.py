@@ -16,21 +16,20 @@ def run():
 
         app.logger.info('decomposing download.id={}'.format(d.id))
         search = d.search
-        parsed = search.parsed_data
+        parsed_data = search.parsed_data
 
         meta = {
             'kinopoisk_id': search.kinopoisk_id,
-            # 'season_title': search.title_ru,
             # 'season_no': search.season_number,
             'episode_title': search.title_ru,
             'year': search.year,
-            'parsed_data_id': parsed.id,
+            'parsed_data_id': parsed_data.id,
             'type': search.type,
-            'genre': search.get_from_raw('genre', parsed.genre),
-            'country': search.get_from_raw('country', parsed.country),
-            'description': search.get_from_raw('description', parsed.description),
-            'duration': parsed.duration,
-            'translation': parsed.translation_code,
+            'genre': search.get_from_raw('genre', parsed_data.genre),
+            'country': search.get_from_raw('country', parsed_data.country),
+            'description': search.get_from_raw('description', parsed_data.description),
+            'duration': parsed_data.duration,
+            'translation': parsed_data.translation_code,
         }
 
         # TODO: добавить логику для сезонов
@@ -39,13 +38,15 @@ def run():
             extension = file_info.get('extension')
             file_type = guess_type(extension, mime)
             file_meta = {
-                    'mime': file_info.get('mime'),
-                    'extension': file_info.get('extension'),
+                    'mime': mime,
+                    'extension': extension,
                     'system_path': file_info.get('path'),
                     'parent_folder': file_info.get('parent'),
+                    'file_type': file_type
                 }
             file_meta.update(meta)
 
+            episodeResources = list()
             if file_type is FileTypes.VIDEO:
                 episode = Episode.create(file_meta)
                 db.session.add(episode)

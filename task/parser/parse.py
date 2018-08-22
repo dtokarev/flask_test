@@ -37,8 +37,8 @@ def search_and_parse(s: Search):
         s.status = Search.Statuses.PROCESSING
         db.session.commit()
 
-        cnt = 4 if s.type == ResourceType.SERIES else 2
-        preferences = SearchPreferences(keywords=[s.title_ru, s.title_en], year=s.year, cnt=cnt)
+        sample_count = SearchPreferences.get_default_sample_count_for_type(s.type)
+        preferences = SearchPreferences(keywords=[s.title_ru, s.title_en], year=s.year, sample_count=sample_count)
 
         matches = tracker.get_matches(preferences)
 

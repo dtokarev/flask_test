@@ -170,7 +170,7 @@ class Rutracker:
             matcher = create_matcher(preferences, actual_data, link)
             matchers.append(matcher)
 
-        return Matcher.get_best(matchers, preferences.count)
+        return Matcher.get_best(matchers, preferences.sample_count)
 
     def _save_session(self):
         """
