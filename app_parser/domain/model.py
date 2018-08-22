@@ -224,7 +224,7 @@ class Episode(db.Model):
         return media
 
 
-class EpisodeResource(db.model):
+class EpisodeResource(db.Model):
     __bind_key__ = 'db_resource'
 
     id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
