@@ -1,0 +1,22 @@
+FROM python:3.6.5-slim
+
+WORKDIR /app
+
+COPY . /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gcc \
+    && apt-get install -y default-libmysqlclient-dev \
+                          mysql-client \
+                          redis-tools \
+                          supervisor \
+    && pip install --upgrade pip \
+    && pip install -r requirements.txt
+
+# TODO: in prod only
+RUN ln -s /app/conf/supervisor.conf /etc/supervisor/conf.d
+
+EXPOSE 5000
+
+RUN chmod +x /app/docker/entrypoint-dev.sh
+CMD ["/app/docker/entrypoint-dev.sh"]

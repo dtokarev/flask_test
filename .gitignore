@@ -1,40 +1,9 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+.idea/
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
+.env/
+.venv/
 
+__pycache__
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-
-# Flask stuff:
-/instance/
-.webassets-cache
-
-#Ansible
-group_vars/production
-
-# Environments
-.env
-.venv
-env/
-venv/
-
-#IDE
-.idea
-.vscode
-
+instance/*
+local_data*

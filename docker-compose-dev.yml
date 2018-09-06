@@ -1,0 +1,54 @@
+version: '3.3'
+
+services:
+
+  parser:
+    build:
+      context: ./services/parser
+      dockerfile: Dockerfile-dev
+    container_name: parser
+    volumes:
+      - './services/parser:/app'
+    ports:
+      - 5001
+    links:
+      - parser-db:parser-db
+    depends_on:
+      - parser-db
+      - redis-common
+    environment:
+      - FLASK_ENV=development
+      - APP_SETTINGS=project.config.DevelopmentConfig
+      - 'DATABASE_URL=mysql+mysqldb://sample_user:sample_password@parser-db/lp_parser?charset=utf8mb4&binary_prefix=true'
+      - REDIS_HOST=redis-common
+  parser-db:
+    image: mysql:5.7
+    restart: always
+    container_name: parser-db
+    ports:
+      - "13306:3306"
+    volumes:
+      - ./local_data/mysql_parser:/var/lib/mysql
+    environment:
+        MYSQL_USER: sample_user
+        MYSQL_PASSWORD: sample_password
+        MYSQL_ROOT_PASSWORD: 1
+        MYSQL_DATABASE: lp_parser
+  redis-common:
+    image: redis:4.0-alpine
+    restart: always
+    container_name: redis-common
+    ports:
+      - "16379:6379"
+    volumes:
+      - ./local_data/redis:/data
+    command: ["redis-server", "--appendonly", "yes"]
+  nginx:
+    build:
+      context: ./services/nginx
+      dockerfile: Dockerfile-dev
+    restart: always
+    ports:
+      - 8000:80
+    depends_on:
+      - parser
